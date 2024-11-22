@@ -10,6 +10,7 @@ import SubNavbar from '../../components/SubNavbar';
 import { useAtom } from 'jotai';
 import { emailAtom } from '../../context/ClinicalAuthProvider';
 import { ResetPassword } from '../../utils/useApi';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 
 export default function ClientResetPassword ({ navigation }) {
@@ -81,7 +82,7 @@ export default function ClientResetPassword ({ navigation }) {
         <StatusBar 
           translucent backgroundColor="transparent"
         />
-        <MHeader navigation={navigation} />
+        <MHeader navigation={navigation} back={true} />
         <View style={{width: '100%', height: '60%', marginTop: 110, justifyContent:'center', alignItems: 'center', display: 'flex'}}
         >
           <View style={styles.authInfo}>
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: 'white', 
-    height: 30, 
+    height: RFValue(30), 
     marginBottom: 10, 
     borderWidth: 1, 
     borderColor: 'hsl(0, 0%, 86%)',
@@ -189,8 +190,8 @@ const styles = StyleSheet.create({
   subBtn: {
     marginTop: 0,
     padding: 10,
-    backgroundColor: '#447feb',
-    color: 'black',
+    backgroundColor: '#A020F0',
+    color: '#fff',
     fontSize: 16,
   },
 });

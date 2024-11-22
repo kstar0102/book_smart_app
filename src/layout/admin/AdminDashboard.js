@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, StatusBar } from 'react-native';
+import { View, StyleSheet, ScrollView, StatusBar, Dimensions } from 'react-native';
 import { Text } from 'react-native-paper';
 import MFooter from '../../components/Mfooter';
 import AHeader from '../../components/Aheader';
@@ -9,6 +9,9 @@ import { GetDashboardData } from '../../utils/useApi';
 import { useFocusEffect } from '@react-navigation/native';
 import AnimatedHeader from '../AnimatedHeader';
 import Loader from '../Loader';
+import { RFValue } from 'react-native-responsive-fontsize';
+
+const { width, height } = Dimensions.get('window');
 
 export default function AdminDashboard ({ navigation }) {
   const [jobInfo, setJobInfo] = useState([
@@ -130,7 +133,7 @@ export default function AdminDashboard ({ navigation }) {
         />
         <AHeader navigation={navigation} currentPage={0} />
         <SubNavbar navigation={navigation} name={"AdminLogin"}/>
-        <ScrollView style={{width: '100%', marginTop: 155}}
+        <ScrollView style={{width: '100%', marginTop: height * 0.25}}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.topView}>
@@ -219,7 +222,7 @@ const styles = StyleSheet.create({
     top: 10
   },
   title: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'left',
@@ -234,17 +237,17 @@ const styles = StyleSheet.create({
   },
   titles: {
     fontWeight: 'bold',
-    fontSize: 16,
-    lineHeight: 40,
+    fontSize: RFValue(14),
+    lineHeight: 30,
     textAlign: 'center',
     color: 'white',
     padding: 5,
-    width: '60%',
+    width: '70%',
     backgroundColor: "#2243f3", 
     borderRadius: 10
   },
   content: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     lineHeight: 40,
   },
   profileTitleBg: {
@@ -258,13 +261,14 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   profileTitle: {
+    fontSize: RFValue(12),
     fontWeight: 'bold',
     color: 'white',
   },
   Italic: {
     fontStyle: 'italic',
     color: '#0000ff',
-    // marginLeft: '10%',
+    fontSize: RFValue(12),
     marginBottom: 20, 
   },
   head: {

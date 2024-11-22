@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, View, Image, Text, ScrollView, TouchableOpacity, Modal, StatusBar } from 'react-native';
+import { Alert, StyleSheet, View, Image, Text, ScrollView, TouchableOpacity, Modal, StatusBar, Dimensions } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import images from '../../assets/images';
 import { TextInput } from 'react-native-paper';
@@ -14,12 +14,16 @@ import DocumentPicker from 'react-native-document-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import RNFS from 'react-native-fs'
 import Loader from '../Loader';
+import { RFValue } from 'react-native-responsive-fontsize';
+
+const { width, height } = Dimensions.get('window');
 
 export default function AdminEditProfile({ navigation }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [phone, setPhone] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
   const [email, setEmail] = useAtom(emailAtom);
   const [tfirstName, settfirstNmae] = useAtom(firstNameAtom);
   const [tlastName, settlastNmae] = useAtom(lastNameAtom);
@@ -55,6 +59,7 @@ export default function AdminEditProfile({ navigation }) {
       setAvatar({  name: '', type: '', content: '' });
       setTemail('');
       setAddress({ street: '', street2: '', city: '', state: '', zip: '' });
+      setPhotoUrl('');
     } else {
       setFirstName(response.user.firstName);
       setLastName(response.user.lastName);
@@ -63,6 +68,7 @@ export default function AdminEditProfile({ navigation }) {
       setAvatar(response.user.photoImage);
       setTemail(response.user.email);
       setAddress(response.user.address);
+      setPhotoUrl(response.user.photoImage.content);
     }
     setLoading(false);
   };
@@ -132,6 +138,7 @@ export default function AdminEditProfile({ navigation }) {
           console.log('Camera error code: ', response.errorCode);
         } else {
           const fileUri = response.assets[0].uri;
+          setPhotoUrl(fileUri);
           const fileContent = await RNFS.readFile(fileUri, 'base64');
           
           setAvatar({
@@ -187,7 +194,7 @@ export default function AdminEditProfile({ navigation }) {
         } else if (response.assets && response.assets.length > 0) {
           const pickedImage = response.assets[0].uri;
           const fileContent = await RNFS.readFile(pickedImage, 'base64');
-          
+          setPhotoUrl(pickedImage);
           setAvatar({
             content: fileContent,
             type: 'image',
@@ -244,6 +251,7 @@ export default function AdminEditProfile({ navigation }) {
       } else {
         fileType = 'unknown';
       }
+      setPhotoUrl(res[0].uri);
       setAvatar({ content: `${fileContent}`, type: fileType, name: res[0].name });
       toggleFileTypeSelectModal();
     } catch (err) {
@@ -320,6 +328,7 @@ export default function AdminEditProfile({ navigation }) {
         setEmail(response.user.email);
         settfirstNmae(response.user.firstName);
         settlastNmae(response.user.lastName);
+        console.log(response);
         navigation.goBack();
       } catch (error) {
         console.error('Signup failed: ', error);
@@ -333,7 +342,7 @@ export default function AdminEditProfile({ navigation }) {
   }
 
   const handleShowFile = (data) => {
-    navigation.navigate("FileViewer", { jobId: '', fileData: data });
+    navigation.navigate("AdminFileViewer", { fileData: { name: data.name, type: data.type, content: photoUrl } });
   };
 
   return (
@@ -341,7 +350,7 @@ export default function AdminEditProfile({ navigation }) {
       <StatusBar 
         translucent backgroundColor="transparent"
       />
-      <MHeader navigation={navigation}/>
+      <MHeader navigation={navigation} back={true} />
       <MSubNavbar navigation={navigation} name={"Admin"} />
       <ScrollView style = {styles.scroll}    
         showsVerticalScrollIndicator={false}
@@ -412,10 +421,10 @@ export default function AdminEditProfile({ navigation }) {
               
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={toggleFileTypeSelectModal} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color:"black"}}>Choose File</Text>
+                  <Text style={{fontWeight: '400', padding: 0, fontSize: RFValue(14), color:"black"}}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, { width: '70%', color: 'black', height: 30 }]}
+                  style={[styles.input, { width: '65%', color: 'black', height: 30 }]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
@@ -449,7 +458,7 @@ export default function AdminEditProfile({ navigation }) {
                   <Text style = {{color:"black", marginLeft:5}}>Street Address2</Text>
                 </View>
                 <View style={{flexDirection: 'row', width: '100%', gap: 5, marginBottom: 30}}>
-                  <View style={[styles.input, {width: '45%'}]}>
+                  <View style={{width: '45%'}}>
                     <TextInput
                       placeholder=""
                       style={[styles.input, {width: '100%', marginBottom: 0}]}
@@ -458,7 +467,7 @@ export default function AdminEditProfile({ navigation }) {
                     />
                     <Text style = {{color:"black", marginLeft:5}}>City</Text>
                   </View>
-                  <View style={[styles.input, {width: '20%'}]}>
+                  <View style={{width: '20%'}}>
                     <TextInput
                       placeholder=""
                       style={[styles.input, {width: '100%', marginBottom: 0}]}
@@ -467,7 +476,7 @@ export default function AdminEditProfile({ navigation }) {
                     />
                     <Text style = {{color:"black", marginLeft:5}}>State</Text>
                   </View>
-                  <View style={[styles.input, {width: '30%'}]}>
+                  <View style={{width: '30%'}}>
                     <TextInput
                       placeholder=""
                       style={[styles.input, {width: '100%', marginBottom: 0}]}
@@ -572,7 +581,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fffff8'
   },
   scroll: {
-    marginTop: 151,
+    marginTop: height * 0.25,
   },
   backTitle: {
     backgroundColor: 'black',
@@ -636,7 +645,7 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 10,
     margin: '5%',
-    // marginBottom: 100,
+    marginBottom: 100,
     borderWidth: 1,
     borderColor: 'grey',
     overflow: 'hidden',
@@ -685,7 +694,7 @@ const styles = StyleSheet.create({
     marginLeft: '25%',
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     color: 'black',
     textAlign: 'left',
     paddingTop: 10,
@@ -693,7 +702,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
   middleText: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     margin: 0,
     lineHeight: 16,
     color: 'black'
@@ -709,19 +718,19 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 130
   },
-  btn: {flexDirection: 'column',
-    gap: 20,
-    marginBottom: 30,
+  btn: {
+    flexDirection: 'column',
+    gap: 20
   },
   subBtn: {
     marginTop: 0,
     padding: 10,
     backgroundColor: '#A020F0',
     color: 'white',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   drinksButton: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     padding: 15,
     borderWidth: 3,
     borderColor: 'white',
@@ -804,7 +813,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   headerText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
     color: 'black'
   },
@@ -826,8 +835,8 @@ const styles = StyleSheet.create({
     paddingRight: 10
   },
   btnSheet: {
-		height: 100,
-		width:100,
+    height: RFValue(80),
+    width: RFValue(80),
 		justifyContent: "center",
 		alignItems: "center",
 		borderRadius: 10,

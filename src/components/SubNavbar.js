@@ -1,10 +1,15 @@
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, PixelRatio } from 'react-native';
 import { Card } from 'react-native-paper';
 import { useAtom } from 'jotai';
 import { firstNameAtom as clinicalFirstNameAtom } from '../context/ClinicalAuthProvider';
 import { firstNameAtom as adminFirstNameAtom } from '../context/AdminAuthProvider';
 import { firstNameAtom as facilityFirstNameAtom } from '../context/FacilityAuthProvider';
+import { RFValue } from "react-native-responsive-fontsize";
+import { Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+const pixelRatio = PixelRatio.getFontScale();
 
 export default function SubNavbar({name, navigation}) {
   let userRole = 'clinical';
@@ -20,13 +25,14 @@ export default function SubNavbar({name, navigation}) {
   return (
     <Card style={styles.shadow}>
       <View>
-        <Text style={{color: "black"}}>
+        <Text style={{color: "black", fontSize: pixelRatio > 1.5 ? RFValue(10) : RFValue(14)}}>
           Logged in as&nbsp;
-          <Text style={{fontWeight: 'bold', color:"black"}}>{firstName}</Text>&nbsp;-&nbsp;
+          <Text style={{fontWeight: 'bold', color:"black", fontSize: pixelRatio > 1.5 ? RFValue(10) : RFValue(14)}}>{firstName}</Text>&nbsp;-&nbsp;
           <Text 
             style={{
               color: '#2a53c1', 
-              textDecorationLine: 'underline'
+              textDecorationLine: 'underline',
+              fontSize: pixelRatio > 1.5 ? RFValue(10) : RFValue(14)
             }}
             onPress={()=>handleNavigate('AccountSettings')}
           >
@@ -38,7 +44,8 @@ export default function SubNavbar({name, navigation}) {
         <Text 
             style={{
               color: '#2a53c1', 
-              textDecorationLine: 'underline'
+              textDecorationLine: 'underline',
+              fontSize: pixelRatio > 1.5 ? RFValue(10) : RFValue(14)
             }}
             onPress={()=>handleNavigate(name)}>
             Log Out
@@ -53,16 +60,17 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     backgroundColor: 'hsl(0, 0%, 80%)',
     position: 'absolute',
-    top: 95,
+    top: height * 0.15,
+    height: height * 0.1,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingHorizontal: 10,
-    paddingVertical: 10
+    paddingHorizontal: RFValue(10),
+    paddingVertical: RFValue(5)
   },
   actionsContainer: {
     width: '100%',
-    marginTop: 5,
+    marginTop: RFValue(2),
     flexDirection: 'column',
     alignItems: 'flex-end',
   }

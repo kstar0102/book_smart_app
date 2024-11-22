@@ -1,16 +1,15 @@
-import React, { useEffect, useState } from 'react';
-
-import { View, Image, StyleSheet, StatusBar, Text } from 'react-native';
-import images from '../assets/images';
-import { Card, IconButton, useTheme } from 'react-native-paper';
-import { DrawerActions, useNavigation } from '@react-navigation/native';
+import React from 'react';
+import { View, StyleSheet, Text, PixelRatio } from 'react-native';
+import { Card, useTheme } from 'react-native-paper';
 import { useAtom } from 'jotai';
-import { emailAtom, firstNameAtom } from '../context/ClinicalAuthProvider';
-// import { getRatingDataByUserID } from '../utils/api';
+import { firstNameAtom } from '../context/ClinicalAuthProvider';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
+const pixelRatio = PixelRatio.getFontScale();
 
 export default function MSubNavbar({name, navigation}) {
-  const theme = useTheme();
-
   let userRole = 'clinical';
   if (name === "Caregiver") userRole = 'clinical';
   else if (name === "Admin") userRole = 'admin';
@@ -19,10 +18,11 @@ export default function MSubNavbar({name, navigation}) {
   const [firstName, serFistName] = useAtom(firstNameAtom)
   const handleNavigate = (navigateUrl) => {
     navigation.navigate(navigateUrl)
-  }
+  };
+
   return (
     <Card style={styles.shadow}>
-      <View style={{flexDirection: 'row', justifyContent: 'flex-start', width: '100%'}}>
+      <View style={{flexDirection: 'row', justifyContent: 'flex-start', width: '100%', paddingHorizontal: 20}}>
         <Text style={[styles.text, {
             color: '#2a53c1', 
             textDecorationLine: 'underline'
@@ -37,10 +37,10 @@ export default function MSubNavbar({name, navigation}) {
             }
           }}
         >
-          👩‍⚕️ {name} Profile
+          {name} Profile
         </Text>
         <Text style={styles.text} >
-          {" > "}
+          {">"}
         </Text>
         <Text style={[styles.text, {
             color: '#2a53c1', 
@@ -59,7 +59,7 @@ export default function MSubNavbar({name, navigation}) {
           Edit My Profile
         </Text>
       </View>
-      <View style={{flexDirection: 'row', with: '100%', justifyContent: 'flex-end'}}>
+      <View style={{flexDirection: 'row', with: '100%', justifyContent: 'flex-end', flexWrap: 'wrap', paddingHorizontal: 10}}>
         <Text style={styles.text}>
           Logged in as&nbsp;
           <Text style={{fontWeight: 'bold'}}>{firstName}</Text>&nbsp;-&nbsp;
@@ -72,7 +72,7 @@ export default function MSubNavbar({name, navigation}) {
           >
             Account Settings
           </Text>
-          &nbsp;- &nbsp;
+          {'\n'}  &nbsp;- &nbsp;
           <Text 
             style={{
               color: '#2a53c1', 
@@ -80,7 +80,7 @@ export default function MSubNavbar({name, navigation}) {
             }}
             onPress={()=>handleNavigate('Home')}
           >
-            Log Out
+          Log Out
           </Text>
         </Text>
       </View>
@@ -92,16 +92,16 @@ const styles = StyleSheet.create({
   shadow: {
     borderRadius: 0,
     backgroundColor: 'hsl(0, 0%, 80%)',
-    top: 98,
+    top: height * 0.15,
     position:'absolute',
     width: '100%',
-    paddingVertical: 10
+    paddingVertical: RFValue(8),
+    height: height * 0.1
   },
   text: {
-    paddingHorizontal: 10,
+    paddingHorizontal: RFValue(5),
     color: '#101010',
-    fontSize: 14,
-    textAlign: 'right',
-    lineHeight: 16
+    fontSize: pixelRatio > 1.5 ? RFValue(9) : RFValue(14),
+    textAlign: 'right'
   },
 });

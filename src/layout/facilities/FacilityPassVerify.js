@@ -1,13 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Alert, View, TextInput, Image, StyleSheet, ScrollView, StatusBar } from 'react-native';
-import { Text, PaperProvider, DataTable } from 'react-native-paper';
-import images from '../../assets/images';
-import  { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { Alert, View, StyleSheet, StatusBar } from 'react-native';
+import { Text } from 'react-native-paper';
 import HButton from '../../components/Hbutton'
 import MFooter from '../../components/Mfooter';
 import MHeader from '../../components/Mheader';
-import SubNavbar from '../../components/SubNavbar';
-import { useAtom } from 'jotai';
 import { contactEmailAtom } from '../../context/FacilityAuthProvider';
 import { VerifyCodeSend } from '../../utils/useApi';
 import {
@@ -16,35 +12,30 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
+import { useAtom } from 'jotai';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 const CELL_COUNT = 6;
 
 export default function FacilityPassVerify ({ navigation }) {
-  const handleNavigate = (navigateUrl) => {
-      navigation.navigate(navigateUrl);
-  }
-
+  const [email, setEmail] = useAtom(contactEmailAtom);
   const [credentials, setCredentials] = useState(
     {
       verifyCode: 0,
     }
   );
 
-  const handleCredentials = (target, e) => {
-    setCredentials({...credentials, [target]: e})
-    console.log(credentials)
-  }
-
-  
   const [value, setValue] = useState('');
-  // const [enableMask, setEnableMask] = useState(true);
   const ref = useBlurOnFulfill({value, cellCount: CELL_COUNT});
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value,
     setValue,
   });
+
+  const handleCredentials = (target, e) => {
+    setCredentials({...credentials, [target]: e})
+  };
   
-  // const toggleMask = () => setEnableMask((f) => !f);
   const renderCell = ({index, symbol, isFocused}) => {
     let textChild = null;
     const borderColor = isFocused ? '#53FAFB' : '#151515';
@@ -54,7 +45,7 @@ export default function FacilityPassVerify ({ navigation }) {
     } else if (isFocused) {
       textChild = <Cursor />;
     }
-  //   console.log('symbol', symbol, 'textChild', textChild);
+
     return (
       <Text
         key={index}
@@ -66,15 +57,12 @@ export default function FacilityPassVerify ({ navigation }) {
   };
 
   const handleSubmit = async () => {
-    handleCredentials('verifyCode', value)
-    const response = await VerifyCodeSend({verifyCode: value}, 'facilities');
-    console.log(response)
+    handleCredentials('verifyCode', value, email)
+    const response = await VerifyCodeSend({verifyCode: value, email: email}, 'facilities');
     if (!response.error) {
       console.log('success');
-      
       navigation.navigate('FacilityResetPassword')
-    }
-    else {
+    } else {
       Alert.alert(
         'Failed!',
         `${response.error}`,
@@ -89,16 +77,18 @@ export default function FacilityPassVerify ({ navigation }) {
         { cancelable: false }
       );
     }
-  }
+  };
+
   const handleBack = () => {
     navigation.navigate('FacilityLogin');
-  }
+  };
+  
   return (
       <View style={styles.container}>
         <StatusBar 
           translucent backgroundColor="transparent"
         />
-        <MHeader navigation={navigation} />
+        <MHeader navigation={navigation} back={true} />
         <View style={{width: '100%', height: '60%', marginTop: 110, justifyContent:'center', alignItems: 'center', display: 'flex'}}
         >
           <View style={styles.authInfo}>
@@ -139,7 +129,7 @@ export default function FacilityPassVerify ({ navigation }) {
             <Text style={{textDecorationLine: 'underline', color: '#2a53c1', marginBottom: 100, textAlign: 'left', width: '90%'}}
               onPress={handleBack}
             >
-              Back to 🏚️ Caregiver Home
+              Back to 🏚️ Facility Home
             </Text>
           </View>
         </View>
@@ -210,8 +200,8 @@ const styles = StyleSheet.create({
   subBtn: {
     marginTop: 0,
     padding: 10,
-    backgroundColor: '#447feb',
-    color: 'black',
+    backgroundColor: '#A020F0',
+    color: 'white',
     fontSize: 16,
   },
   verify: {
@@ -223,13 +213,12 @@ const styles = StyleSheet.create({
       marginRight: "4%"
   },
   cell: {
-    width: 40,
-    height: 50,
-    lineHeight: 20,
-    fontSize: 20,
+    width: RFValue(30),
+    height: RFValue(40),
+    lineHeight: RFValue(40),
+    fontSize: RFValue(20),
     fontWeight: '700',
     textAlign: 'center',
-    textAlignVertical:'center',
     marginLeft: "2.8%",
     borderRadius: 10,
     backgroundColor: '#dddddd',

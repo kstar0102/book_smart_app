@@ -1,6 +1,5 @@
 import { Alert, StyleSheet, View, Image, Text, ScrollView, TouchableOpacity, Modal, StatusBar, Button } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 import { useAtom } from 'jotai';
 import images from '../../assets/images';
 import { TextInput } from 'react-native-paper';
@@ -9,25 +8,30 @@ import MHeader from '../../components/Mheader';
 import MFooter from '../../components/Mfooter';
 import DatePicker from 'react-native-date-picker';
 import MSubNavbar from '../../components/MSubNavbar';
-import { getUserInfo, Update } from '../../utils/useApi';
+import { getDegreeList, getUserInfo, Update } from '../../utils/useApi';
 import { aicAtom } from '../../context/ClinicalAuthProvider';
 // Choose file
 import DocumentPicker from 'react-native-document-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import RNFS from 'react-native-fs'
 import Loader from '../Loader';
+import constStyles from '../../assets/styles';
+import { RFValue } from "react-native-responsive-fontsize";
+import { Dimensions } from 'react-native';
+import moment from 'moment';
+
+const { width, height } = Dimensions.get('window');
 
 export default function EditProfile({ navigation }) {
   const [aic, setAIC] = useAtom(aicAtom);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [userRole, setUserRole] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [address, setAddress] = useState('');
   const [photoImage, setPhotoImage] = useState('');
   const [title, setTitle] = useState('');
-  const [birthdays, setBirthdays] = useState('');
+  const [birthdays, setBirthdays] = useState(new Date());
   const [socialSecurityNumber, setSocialSecurityNumber] = useState('');
   const [driverLicense, setDriverLicense] = useState({
     content: '',
@@ -73,7 +77,18 @@ export default function EditProfile({ navigation }) {
     content: '',
     type: '',
     name: ''
-  }); 
+  });
+
+  const [isSendDL, setIsSendDL] = useState(false);
+  const [isSendSC, setIsSendSC] = useState(false);
+  const [isSendPE, setIsSendPE] = useState(false);
+  const [isSendPPD, setIsSendPPD] = useState(false);
+  const [isSendMMR, setIsSendMMR] = useState(false);
+  const [isSendHL, setIsSendHL] = useState(false);
+  const [isSendResume, setIsSendResume] = useState(false);
+  const [isSendCC, setIsSendCC] = useState(false);
+  const [isSendBLS, setIsSendBLS] = useState(false);
+
   const [sfileType, setFiletype] = useState('');
   const [fileTypeSelectModal, setFiletypeSelectModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -88,15 +103,6 @@ export default function EditProfile({ navigation }) {
     socialSecurityNumber: socialSecurityNumber,
     address: address,
     photoImage: photoImage,
-    driverLicense:driverLicense, 
-    socialCard: socialCard,
-    physicalExam: physicalExam, 
-    ppd: ppd, 
-    mmr: mmr, 
-    healthcareLicense: healthcareLicense, 
-    resume: resume, 
-    covidCard: covidCard, 
-    bls: bls
   });
 
   const getData = async () => {
@@ -107,15 +113,60 @@ export default function EditProfile({ navigation }) {
       const updatedCredentials = { ...credentials };
       Object.keys(updatedCredentials).forEach((key) => {
         if (result.userData[key]) {
-          if (typeof updatedCredentials[key] === 'object') {
+          if (key === 'birthday') {
+            if (result.userData[key]) {
+              updatedCredentials[key] = new Date(result.userData[key]);
+              setBirthdays(new Date(result.userData[key]));
+            } else {
+              updatedCredentials[key] = new Date();
+              setBirthdays(new Date());
+            }
+          } else if (typeof updatedCredentials[key] === 'object') {
             updatedCredentials[key] = { ...updatedCredentials[key], ...result.userData[key] };
-          } else if (result.userData[key] == true) {
+          } else if (typeof result.userData[key] == 'boolean') {
             updatedCredentials[key] = result.userData[key] == true ? 1 : 0;
           } else {
             updatedCredentials[key] = result.userData[key];
           }
         }
       });
+      
+      if (result.userData['driverLicense']) {
+        setDriverLicense(result.userData['driverLicense']);
+      }
+
+      if (result.userData['socialCard']) {
+        setSocialCard(result.userData['socialCard']);
+      }
+
+      if (result.userData['physicalExam']) {
+        setPhysicalExam(result.userData['physicalExam']);
+      }
+
+      if (result.userData['ppd']) {
+        setPPD(result.userData['ppd']);
+      }
+
+      if (result.userData['mmr']) {
+        setMMR(result.userData['mmr']);
+      }
+
+      if (result.userData['healthcareLicense']) {
+        setHealthcareLicense(result.userData['healthcareLicense']);
+      }
+
+      if (result.userData['resume']) {
+        setResume(result.userData['resume']);
+      }
+
+      if (result.userData['covidCard']) {
+        setCovidCard(result.userData['covidCard']);
+      }
+
+      if (result.userData['bls']) {
+        setBls(result.userData['bls']);
+      }
+
       setCredentials(updatedCredentials);
       setLoading(false);
     } else {
@@ -142,12 +193,137 @@ export default function EditProfile({ navigation }) {
   //   }, [])
   // );
   useEffect(() => {
+    console.log('===========================================');
     getData();
+    getDegree();
   }, []);
+
+  const handleSendFile = async (target) => {
+    let data = {};
+    if (target == "driverLicense") {
+      data = {
+        driverLicense: driverLicense
+      };
+      setIsSendDL(false);
+    } else if (target == "socialCard") {
+      data = {
+        socialCard: socialCard
+      };
+      setIsSendSC(false);
+    } else if (target == "physicalExam") {
+      data = {
+        physicalExam: physicalExam
+      };
+      setIsSendPE(false);
+    } else if (target == "ppd") {
+      data = {
+        ppd: ppd
+      };
+      setIsSendPPD(false);
+    } else if (target == "mmr") {
+      data = {
+        mmr: mmr
+      };
+      setIsSendMMR(false);
+    } else if (target == "healthcareLicense") {
+      data = {
+        healthcareLicense: healthcareLicense
+      };
+      setIsSendHL(false);
+    } else if (target == "resume") {
+      data = {
+        resume: resume
+      };
+      setIsSendResume(false);
+    } else if (target == "covidCard") {
+      data = {
+        covidCard: covidCard
+      };
+      setIsSendCC(false);
+    } else if (target == "bls") {
+      data = {
+        bls: bls
+      };
+      setIsSendBLS(false);
+    }
+
+    setLoading(true);
+    try {
+      const response = await Update(data, 'clinical');
+      if (!response?.error) {
+        console.log('successfully Updated');
+        data = {};
+        setLoading(false);
+        Alert.alert(
+          'Success!',
+          'Updated',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                console.log('');
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+      } else {
+        console.log('=====================');
+        console.log(JSON.stringify(response.error));
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error('Update failed: ', error)
+    }
+  };
+
+  const [degrees, setDegree] = useState([]);
+  const getDegree = async () => {
+    const response = await getDegreeList('degree');
+    if (!response?.error) {
+      let tempArr = [];
+      response.data.map(item => {
+        tempArr.push(item.degreeName);
+      });
+      tempArr.unshift('');
+      setDegree(tempArr);
+    } else {
+      setDegree([]);
+    }
+  }
 
   const handleCredentials = (target, e) => {
     if (target !== "streetAddress" && target !== "streetAddress2" && target !== "city" && target !== "state" && target !== "zip") {
-      setCredentials({...credentials, [target]: e});
+      if (target == "driverLicense") {
+        setDriverLicense((prev) => ({ ...prev, ...e }));
+        setIsSendDL(true);
+      } else if (target == "socialCard") {
+        setSocialCard((prev) => ({ ...prev, ...e }));
+        setIsSendSC(true);
+      } else if (target == "physicalExam") {
+        setPhysicalExam((prev) => ({ ...prev, ...e }));
+        setIsSendPE(true);
+      } else if (target == "ppd") {
+        setPPD((prev) => ({ ...prev, ...e }));
+        setIsSendPPD(true);
+      } else if (target == "mmr") {
+        setMMR((prev) => ({ ...prev, ...e }));
+        setIsSendMMR(true);
+      } else if (target == "healthcareLicense") {
+        setHealthcareLicense((prev) => ({ ...prev, ...e }));
+        setIsSendHL(true);
+      } else if (target == "resume") {
+        setResume((prev) => ({ ...prev, ...e }));
+        setIsSendResume(true);
+      } else if (target == "covidCard") {
+        setCovidCard((prev) => ({ ...prev, ...e }));
+        setIsSendCC(true);
+      } else if (target == "bls") {
+        setBls((prev) => ({ ...prev, ...e }));
+        setIsSendBLS(true);
+      } else {
+        setCredentials({...credentials, [target]: e});
+      }
     } else {
       setCredentials({...credentials, address: {...credentials.address, [target]: e}})
     }
@@ -160,10 +336,8 @@ export default function EditProfile({ navigation }) {
   };
 
   //-------------------------------------------Date Picker---------------------------------------
-  const [birthday, setBirthday] = useState(new Date());
   const [showCalender, setShowCalendar] = useState(false);
   const handleDayChange = (target, day) => {
-    setBirthday(day);
     handleCredentials(target, day);
   }
 
@@ -407,26 +581,26 @@ export default function EditProfile({ navigation }) {
       setLoading(true);
       try {
         const response = await Update(credentials, 'clinical');
-        // setFirstName(response.user.firstName);
-        // setLastName(response.user.lastName);
-        // setBirthdays(response.user.birthday);
-        // setPhoneNumber(response.user.phoneNumber);
-        // setEmail(response.user.email);
-        // setTitle(response.user.title);
-        // setPhotoImage(response.user.photoImage);
-        // setUserRole(response.user.userRole);
-        // setDriverLicense(response.user.driverLicense);
-        // setSocialCard(response.user.socialCard);
-        // setPhysicalExam(response.user.physicalExam);
-        // setPPD(response.user.ppd);
-        // setMMR(response.user.mmr);
-        // setHealthcareLicense(response.user.healthcareLicense);
-        // setResume(response.user.resume);
-        // setCovidCard(response.user.covidCard);
-        // setBls(response.user.bls);
-        console.log('successfully Updated')
-        setLoading(false);
-        navigation.navigate("MyHome")
+        if (!response?.error) {
+          console.log('successfully Updated')
+          setLoading(false);
+          Alert.alert(
+            'Success!',
+            'Updated',
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  console.log('');
+                },
+              },
+            ],
+            { cancelable: false }
+          );
+        } else {
+          console.log('=====================');
+          console.log(JSON.stringify(response.error));
+        }
       } catch (error) {
         setLoading(false);
         console.error('Update failed: ', error)
@@ -435,43 +609,72 @@ export default function EditProfile({ navigation }) {
   }
 
   const handleRemove = (name) => {
-    handleCredentials(name, {
-      content: '',
-      name: '',
-      type: ''
-    });
+    if (name == "driverLicense") {
+      setDriverLicense({ content: '', name: '', type: '' });
+      setIsSendDL(false);
+    } else if (name == "socialCard") {
+      setSocialCard({ content: '', name: '', type: '' });
+      setIsSendSC(false);
+    } else if (name == "physicalExam") {
+      setPhysicalExam({ content: '', name: '', type: '' });
+      setIsSendPE(false);
+    } else if (name == "ppd") {
+      setPPD({ content: '', name: '', type: '' });
+      setIsSendPPD(false);
+    } else if (name == "mmr") {
+      setMMR({ content: '', name: '', type: '' });
+      setIsSendMMR(false);
+    } else if (name == "healthcareLicense") {
+      setHealthcareLicense({ content: '', name: '', type: '' });
+      setIsSendHL(false);
+    } else if (name == "resume") {
+      setResume({ content: '', name: '', type: '' });
+      setIsSendResume(false);
+    } else if (name == "covidCard") {
+      setCovidCard({ content: '', name: '', type: '' });
+      setIsSendCC(false);
+    } else if (name == "bls") {
+      setBls({ content: '', name: '', type: '' });
+      setIsSendBLS(false);
+    } else {
+      handleCredentials(name, {
+        content: '',
+        name: '',
+        type: ''
+      });
+    }
   };
 
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent"/>
-      <MHeader navigation={navigation}/>
+      <MHeader navigation={navigation} back={true} />
       <MSubNavbar navigation={navigation} name={"Caregiver"}/>
       <ScrollView style = {styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.modal}>
           <View style={styles.authInfo}>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Name <Text style={{color: 'red'}}>*</Text> </Text>
+            <View>
+              <Text style={constStyles.loginSubTitle}> Name <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'row', width: '100%', gap: 5}}>
                 <TextInput
-                  style={[styles.input, {width: '50%'}]}
+                  style={[constStyles.signUpinput, {width: '50%'}]}
                   placeholder="First"
                   onChangeText={e => handleCredentials('firstName', e)}
                   value={credentials.firstName || ''}
                 />
                 <TextInput
-                  style={[styles.input, {width: '50%'}]}
+                  style={[constStyles.signUpinput, {width: '50%'}]}
                   placeholder="Last"
                   onChangeText={e => handleCredentials('lastName', e)}
                   value={credentials.lastName || ''}
                 />
               </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Email <Text style={{color: 'red'}}>*</Text> </Text>
+            <View>
+              <Text style={constStyles.loginSubTitle}> Email <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'row', width: '100%', gap: 5}}>
                 <TextInput
-                  style={[styles.input, {width: '100%'}]}
+                  style={[constStyles.signUpinput, {width: '100%'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
@@ -481,23 +684,23 @@ export default function EditProfile({ navigation }) {
                 />
               </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Phone <Text style={{color: 'red'}}>*</Text> </Text>
+            <View>
+              <Text style={constStyles.loginSubTitle}> Phone <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'row', width: '100%', gap: 5}}>
                 <TextInput
                   value={credentials.phoneNumber}
-                  style={[styles.input, {width: '100%'}]}
+                  style={[constStyles.signUpinput, {width: '100%'}]}
                   onChangeText={handlePhoneNumberChange}
                   keyboardType="phone-pad"
                   placeholder={credentials.phoneNumber}
                 />
               </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> SSN <Text style={{color: 'red'}}>*</Text> </Text>
+            <View>
+              <Text style={constStyles.loginSubTitle}> SSN <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'row', width: '100%', gap: 5}}>
                 <TextInput
-                  style={[styles.input, {width: '100%'}]}
+                  style={[constStyles.signUpinput, {width: '100%'}]}
                   placeholder={credentials.socialSecurityNumber}
                   autoCorrect={false}
                   autoCapitalize="none"
@@ -507,15 +710,15 @@ export default function EditProfile({ navigation }) {
                 />
               </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Date of Birth <Text style={{color: 'red'}}>*</Text> </Text>
+            <View>
+              <Text style={constStyles.loginSubTitle}> Date of Birth <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'column', width: '100%', gap: 5}}>
-                <TouchableOpacity onPress={() => {setShowCalendar(true), console.log(showCalender)}} style={{width: '100%', height: 50, zIndex: 10}}>
+                <TouchableOpacity onPress={() => {setShowCalendar(true), console.log(showCalender)}} style={{width: '100%', height: RFValue(50), zIndex: RFValue(10)}}>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '100%', position: 'absolute', zIndex: 0}]}
+                  style={[constStyles.signUpinput, {width: '100%', position: 'absolute', zIndex: 0}]}
                   placeholder=""
-                  value={birthday.toDateString()}
+                  value={moment(credentials.birthday).format("YYYY-MM-DD")}
                   editable={false}
                 />
                 
@@ -523,82 +726,82 @@ export default function EditProfile({ navigation }) {
                 {showCalender && 
                 <>
                   <DatePicker
-                    date={birthday}
+                    date={credentials.birthday}
                     onDateChange={(day) => handleDayChange('birthday', day)}
                     mode="date" // Set the mode to "date" to allow year and month selection
                     androidVariant="native"
                   />
-                  <Button title="confirm" onPress={(day) =>{setShowCalendar(!showCalender);}} />
+                  <Button title="confirm" style = {constStyles.loginMainButton} onPress={(day) =>{setShowCalendar(!showCalender);}} />
                 </>
                 }
               </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Caregiver Address <Text style={{color: 'red'}}>*</Text> </Text>
+            <View>
+              <Text style={constStyles.loginSubTitle}> Caregiver Address <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'column', width: '100%', gap: 5}}>
                 <View style={{width: '100%', marginBottom: 10}}>
                   <TextInput
-                    style={[styles.input, {width: '100%', marginBottom: 0}]}
+                    style={[constStyles.signUpinput, {width: '100%', marginBottom: 0}]}
                     placeholder=""
                     autoCorrect={false}
                     autoCapitalize="none"
                     onChangeText={e => handleCredentials('streetAddress', e)}
                     value={credentials.address.streetAddress || ''}
                   />
-                  <Text style = {{color: "black", marginLeft: 5}}>Street Address</Text>
+                  <Text style = {constStyles.signUpsmalltitle}>Street Address</Text>
                 </View>
                 <View style={{width: '100%', marginBottom: 10}}>
                   <TextInput
-                    style={[styles.input, {width: '100%', marginBottom: 0}]}
+                    style={[constStyles.signUpinput, {width: '100%', marginBottom: 0}]}
                     placeholder=""
                     autoCorrect={false}
                     autoCapitalize="none"
                     onChangeText={e => handleCredentials('streetAddress2', e)}
                     value={credentials.address.streetAddress2 || ''}
                   />
-                  <Text style = {{color: "black", marginLeft: 5}}>Street Address2</Text>
+                  <Text style = {constStyles.signUpsmalltitle}>Street Address2</Text>
                 </View>
                 <View style={{flexDirection: 'row', width: '100%', gap: 5, marginBottom: 30}}>
-                  <View style={[styles.input, {width: '45%'}]}>
+                  <View style={[constStyles.signUpinput, {width: '45%'}]}>
                     <TextInput
                       placeholder=""
-                      style={[styles.input, {width: '100%', marginBottom: 0}]}
+                      style={[constStyles.signUpinput, {width: '100%', marginBottom: 0}]}
                       onChangeText={e => handleCredentials('city', e)}
                       value={credentials.address.city || ''}
                     />
-                    <Text style = {{color: "black", marginLeft: 5}}>City</Text>
+                    <Text style = {constStyles.signUpsmalltitle}>City</Text>
                   </View>
-                  <View style={[styles.input, {width: '20%'}]}>
+                  <View style={[constStyles.signUpinput, {width: '20%'}]}>
                     <TextInput
                       placeholder=""
-                      style={[styles.input, {width: '100%', marginBottom: 0}]}
+                      style={[constStyles.signUpinput, {width: '100%', marginBottom: 0}]}
                       onChangeText={e => handleCredentials('state', e)}
                       value={credentials.address.state || ''}
                     />
-                    <Text style = {{color: "black", marginLeft: 5}}>State</Text>
+                    <Text style = {constStyles.signUpsmalltitle}>State</Text>
                   </View>
-                  <View style={[styles.input, {width: '30%'}]}>
+                  <View style={[constStyles.signUpinput, {width: '30%'}]}>
                     <TextInput
                       placeholder=""
-                      style={[styles.input, {width: '100%', marginBottom: 0}]}
+                      style={[constStyles.signUpinput, {width: '100%', marginBottom: 0}]}
                       // keyboardType="numeric" // Set the keyboardType to "numeric" for zip input
                       onChangeText={e => handleCredentials('zip', e)}
                       value={credentials.address.zip || ''}
                     />
-                    <Text style = {{color: "black", marginLeft: 5}}>Zip</Text>
+                    <Text style = {constStyles.signUpsmalltitle}>Zip</Text>
                   </View>
                 </View>
               </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Title <Text style={{color: 'red'}}>*</Text> </Text>
+            <View>
+              <Text style={constStyles.loginSubTitle}> Title <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{position: 'relative', width: '100%', gap: 5, height: 50}}>
                 <TouchableOpacity onPress = {()=>setShowModal(true)}
                   style={{height: 40, zIndex: 1}}
                 >
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '100%', position: 'absolute', zIndex: 0}]}
+                  style={[constStyles.signUpinput, {width: '100%', position: 'absolute', zIndex: 0}]}
                   placeholder="First"
                   editable= {false}
                   // onChangeText={e => handleCredentials('firstName', e)}
@@ -614,32 +817,37 @@ export default function EditProfile({ navigation }) {
                 >
                   <View style={styles.modalContainer}>
                     <View style={styles.calendarContainer}>
-                      <Text style={styles.subtitle} onPress={()=>handleItemPress('')}>Select Title...</Text>
-                      <Text style={styles.subtitle} onPress={()=>handleItemPress('CNA')}>CNA</Text>
-                      <Text style={styles.subtitle} onPress={()=>handleItemPress('LPN')}>LPN</Text>
-                      <Text style={styles.subtitle} onPress={()=>handleItemPress('RN')}>RN</Text>
+                    {degrees.map((value, index) => (
+                      <Text
+                        key={index}
+                        style={[constStyles.signUpSubtitle, { lineHeight: RFValue(25) }]}
+                        onPress={() => handleItemPress(value)}
+                      >
+                        {value === "" ? "Select Title ..." : value}
+                      </Text>
+                    ))}
                     </View>
                   </View>
                 </Modal>}
               </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Pic. (Optional)</Text>
+            <View>
+              <Text style={constStyles.loginSubTitle}> Pic. (Optional)</Text>
               {credentials.photoImage.name !== "" && <View style={{marginBottom: 10}}>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
-                  onPress={() => navigation.navigate("FileViewer", { jobId: '', fileData: credentials.photoImage })}
+                <Text style={constStyles.profileChoosenText}
+                  onPress={() => navigation.navigate("UserFileViewer", { userId: aic, filename: 'photoImage' })}
                 >{credentials.photoImage.name} &nbsp;&nbsp;</Text>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+                <Text style={constStyles.profileChoosenText}
                   onPress = {() => handleRemove('photoImage')}
                 >remove</Text>
               </View>}
               
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={()=>handleChangeFileType('photoImage')} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                  <Text style={{fontWeight: '400', padding: 0, fontSize: RFValue(12), color: 'black'}}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '70%', color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '70%', color: 'black'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
@@ -647,228 +855,278 @@ export default function EditProfile({ navigation }) {
                 />
               </View>
             </View>
+            <View style={[styles.btn, {marginTop: 20}]}>
+              <HButton style={styles.subBtn} onPress={ handleSubmit }>
+                Submit
+              </HButton>
+            </View>
             <View style={styles.bottomBar}/>
           </View>
           <View style={styles.authInfo}>
             <View style={styles.profileTitleBg}>
               <Text style={styles.profileTitle}>MY DOCUMENTS</Text>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Driver's License</Text>
-              {credentials.driverLicense.name !== "" &&<View style={{marginBottom: 10}}>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+            <View>
+              <Text style={constStyles.loginSubTitle}> Driver's License</Text>
+              {driverLicense.name !== "" &&<View style={{marginBottom: 10}}>
+                <Text style={constStyles.profileChoosenText}
                   onPress={() => navigation.navigate("UserFileViewer", { userId: aic, filename: 'driverLicense' })}
-                >{credentials.driverLicense.name} &nbsp;&nbsp;</Text>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+                >{driverLicense.name} &nbsp;&nbsp;</Text>
+                <Text style={constStyles.profileChoosenText}
                   onPress = {() => handleRemove('driverLicense')}
                 >remove</Text>
               </View>}
 
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={()=>handleChangeFileType('driverLicense')} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                  <Text style={constStyles.profileChooseButton}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '70%', color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '70%', color: 'black'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
-                  value={credentials.driverLicense.name || ''}
+                  value={driverLicense.name || ''}
                 />
               </View>
+              <View>
+                {isSendDL && <TouchableOpacity title="Select File" onPress={() => handleSendFile('driverLicense')} style={styles.saveFile}>
+                  <Text style={constStyles.saveFileBtn}>Save</Text>
+                </TouchableOpacity>}
+              </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Social Security Card</Text>
-              {credentials.socialCard.name !== "" &&<View style={{marginBottom: 10}}>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+            <View>
+              <Text style={constStyles.loginSubTitle}> Social Security Card</Text>
+              {socialCard.name !== "" &&<View style={{marginBottom: 10}}>
+                <Text style={constStyles.profileChoosenText}
                   onPress={() => navigation.navigate("UserFileViewer", { userId: aic, filename: 'socialCard' })}
-                >{credentials.socialCard.name} &nbsp;&nbsp;</Text>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+                >{socialCard.name} &nbsp;&nbsp;</Text>
+                <Text style={constStyles.profileChoosenText}
                   onPress = {() => handleRemove('socialCard')}
                 >remove</Text>
               </View>}
               
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={()=>handleChangeFileType('socialCard')} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                  <Text style={constStyles.profileChooseButton}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '70%', color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '70%', color: 'black'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
-                  value={credentials.socialCard.name || ''}
+                  value={socialCard.name || ''}
                 />
               </View>
+              <View>
+                {isSendSC && <TouchableOpacity title="Select File" onPress={() => handleSendFile('socialCard')} style={styles.saveFile}>
+                  <Text style={constStyles.saveFileBtn}>Save</Text>
+                </TouchableOpacity>}
+              </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Physical Exam</Text>
-              {credentials.physicalExam.name !== "" &&<View style={{marginBottom: 10}}>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+            <View>
+              <Text style={constStyles.loginSubTitle}> Physical Exam</Text>
+              {physicalExam.name !== "" &&<View style={{marginBottom: 10}}>
+                <Text style={constStyles.profileChoosenText}
                 onPress={() => navigation.navigate("UserFileViewer", { userId: aic, filename: 'physicalExam' })}
-                >{credentials.physicalExam.name} &nbsp;&nbsp;</Text>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+                >{physicalExam.name} &nbsp;&nbsp;</Text>
+                <Text style={constStyles.profileChoosenText}
                   onPress = {() => handleRemove('physicalExam')}
                 >remove</Text>
               </View>}
               
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={()=>handleChangeFileType('physicalExam')} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                  <Text style={constStyles.profileChooseButton}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '70%', color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '70%', color: 'black'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
-                  value={credentials.physicalExam.name || ''}
+                  value={physicalExam.name || ''}
                 />
               </View>
+              <View>
+                {isSendPE && <TouchableOpacity title="Select File" onPress={() => handleSendFile('physicalExam')} style={styles.saveFile}>
+                  <Text style={constStyles.saveFileBtn}>Save</Text>
+                </TouchableOpacity>}
+              </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> PPD (TB Test)</Text>
-              {credentials.ppd.name !== "" &&<View style={{marginBottom: 10}}>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+            <View>
+              <Text style={constStyles.loginSubTitle}> PPD (TB Test)</Text>
+              {ppd.name !== "" &&<View style={{marginBottom: 10}}>
+                <Text style={constStyles.profileChoosenText}
                 onPress={() => navigation.navigate("UserFileViewer", { userId: aic, filename: 'ppd' })}
-                >{credentials.ppd.name} &nbsp;&nbsp;</Text>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+                >{ppd.name} &nbsp;&nbsp;</Text>
+                <Text style={constStyles.profileChoosenText}
                   onPress = {() => handleRemove('ppd')}
                 >remove</Text>
               </View>}
               
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={()=>handleChangeFileType('ppd')} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                  <Text style={constStyles.profileChooseButton}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '70%', color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '70%', color: 'black'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
-                  value={credentials.ppd.name || ''}
+                  value={ppd.name || ''}
                 />
               </View>
+              <View>
+                {isSendPPD && <TouchableOpacity title="Select File" onPress={() => handleSendFile('ppd')} style={styles.saveFile}>
+                  <Text style={constStyles.saveFileBtn}>Save</Text>
+                </TouchableOpacity>}
+              </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> MMR (Immunizations)</Text>
-              {credentials.mmr.name !== "" &&<View style={{marginBottom: 10}}>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+            <View>
+              <Text style={constStyles.loginSubTitle}> MMR (Immunizations)</Text>
+              {mmr.name !== "" &&<View style={{marginBottom: 10}}>
+                <Text style={constStyles.profileChoosenText}
                 onPress={() => navigation.navigate("UserFileViewer", { userId: aic, filename: 'mmr' })}
-                >{credentials.mmr.name} &nbsp;&nbsp;</Text>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+                >{mmr.name} &nbsp;&nbsp;</Text>
+                <Text style={constStyles.profileChoosenText}
                   onPress = {() => handleRemove('mmr')}
                 >remove</Text>
               </View>}
               
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={()=>handleChangeFileType('mmr')} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                  <Text style={constStyles.profileChooseButton}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '70%', color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '70%', color: 'black'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
-                  value={credentials.mmr.name || ''}
+                  value={mmr.name || ''}
                 />
               </View>
+              <View>
+                {isSendMMR && <TouchableOpacity title="Select File" onPress={() => handleSendFile('mmr')} style={styles.saveFile}>
+                  <Text style={constStyles.saveFileBtn}>Save</Text>
+                </TouchableOpacity>}
+              </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Healthcare License</Text>
-              {credentials.healthcareLicense.name !== "" &&<View style={{marginBottom: 10}}>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+            <View>
+              <Text style={constStyles.loginSubTitle}> Healthcare License</Text>
+              {healthcareLicense.name !== "" &&<View style={{marginBottom: 10}}>
+                <Text style={constStyles.profileChoosenText}
                 onPress={() => navigation.navigate("UserFileViewer", { userId: aic, filename: 'healthcareLicense' })}
-                >{credentials.healthcareLicense.name} &nbsp;&nbsp;</Text>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+                >{healthcareLicense.name} &nbsp;&nbsp;</Text>
+                <Text style={constStyles.profileChoosenText}
                   onPress = {() => handleRemove('healthcareLicense')}
                 >remove</Text>
               </View>}
               
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={()=>handleChangeFileType('healthcareLicense')} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                  <Text style={constStyles.profileChooseButton}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '70%', color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '70%', color: 'black'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
-                  value={credentials.healthcareLicense.name || ''}
+                  value={healthcareLicense.name || ''}
                 />
               </View>
+              <View>
+                {isSendHL && <TouchableOpacity title="Select File" onPress={() => handleSendFile('healthcareLicense')} style={styles.saveFile}>
+                  <Text style={constStyles.saveFileBtn}>Save</Text>
+                </TouchableOpacity>}
+              </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Resume</Text>
-              {credentials.resume.name !== "" &&<View style={{marginBottom: 10}}>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+            <View>
+              <Text style={constStyles.loginSubTitle}> Resume</Text>
+              {resume.name !== "" &&<View style={{marginBottom: 10}}>
+                <Text style={constStyles.profileChoosenText}
                 onPress={() => navigation.navigate("UserFileViewer", { userId: aic, filename: 'resume' })}
-                >{credentials.resume.name} &nbsp;&nbsp;</Text>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+                >{resume.name} &nbsp;&nbsp;</Text>
+                <Text style={constStyles.profileChoosenText}
                   onPress = {() => handleRemove('resume')}
                 >remove</Text>
               </View>}
               
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={()=>handleChangeFileType('resume')} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                  <Text style={constStyles.profileChooseButton}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '70%', color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '70%', color: 'black'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
-                  value={credentials.resume.name || ''}
+                  value={resume.name || ''}
                 />
               </View>
+              <View>
+                {isSendResume && <TouchableOpacity title="Select File" onPress={() => handleSendFile('resume')} style={styles.saveFile}>
+                  <Text style={constStyles.saveFileBtn}>Save</Text>
+                </TouchableOpacity>}
+              </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> COVID Card</Text>
-              {credentials.covidCard.name !== "" &&<View style={{marginBottom: 10}}>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+            <View>
+              <Text style={constStyles.loginSubTitle}> COVID Card</Text>
+              {covidCard.name !== "" &&<View style={{marginBottom: 10}}>
+                <Text style={constStyles.profileChoosenText}
                 onPress={() => navigation.navigate("UserFileViewer", { userId: aic, filename: 'covidCard' })}
-                >{credentials.covidCard.name} &nbsp;&nbsp;</Text>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+                >{covidCard.name} &nbsp;&nbsp;</Text>
+                <Text style={constStyles.profileChoosenText}
                   onPress = {() => handleRemove('covidCard')}
                 >remove</Text>
               </View>}
               
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={()=>handleChangeFileType('covidCard')} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                  <Text style={constStyles.profileChooseButton}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '70%', color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '70%', color: 'black'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
-                  value={credentials.covidCard.name || ''}
+                  value={covidCard.name || ''}
                 />
               </View>
+              <View>
+                {isSendCC && <TouchableOpacity title="Select File" onPress={() => handleSendFile('covidCard')} style={styles.saveFile}>
+                  <Text style={constStyles.saveFileBtn}>Save</Text>
+                </TouchableOpacity>}
+              </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> BLS(CPR card)</Text>
-              {credentials.bls.name !== "" &&<View style={{marginBottom: 10}}>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+            <View>
+              <Text style={constStyles.loginSubTitle}> BLS(CPR card)</Text>
+              {bls.name !== "" &&<View style={{marginBottom: 10}}>
+                <Text style={constStyles.profileChoosenText}
                 onPress={() => navigation.navigate("UserFileViewer", { userId: aic, filename: 'bls' })}
-                >{credentials.bls.name} &nbsp;&nbsp;</Text>
-                <Text style={{color: '#0000ff', textDecorationLine: 'underline'}}
+                >{bls.name} &nbsp;&nbsp;</Text>
+                <Text style={constStyles.profileChoosenText}
                   onPress = {() => handleRemove('bls')}
                 >remove</Text>
               </View>}
               
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={()=>handleChangeFileType('bls')} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                  <Text style={constStyles.profileChooseButton}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '70%', color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '70%', color: 'black'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
-                  value={credentials.bls.name || ''}
+                  value={bls.name || ''}
                 />
               </View>
-              <Text style={[styles.subtitle, {lineHeight: 40}]}> W - 9 {'\n'}
+              <View>
+                {isSendBLS && <TouchableOpacity title="Select File" onPress={() => handleSendFile('bls')} style={styles.saveFile}>
+                  <Text style={constStyles.saveFileBtn}>Save</Text>
+                </TouchableOpacity>}
+              </View>
+              <Text style={[constStyles.signUpSubtitle, {lineHeight:30}]}> W - 9 {'\n'}
                 Standard State Criminal{'\n'}
                 Drug Test{'\n'}
                 Hep B (shot or declination){'\n'}
@@ -877,18 +1135,14 @@ export default function EditProfile({ navigation }) {
                 CHRC 103 Form{'\n'}
               </Text>
             </View>
-            <View style={[styles.btn, {marginTop: 20}]}>
-              <HButton style={styles.subBtn} onPress={ handleSubmit }>
-                Submit
-              </HButton>
-            </View>
+            <Text style={{textDecorationLine: 'underline', color: '#2a53c1', marginBottom: 20 }}
+              onPress={handleBack}
+            >
+              Back to 🏚️ Caregiver Profile
+            </Text>
           </View>
         </View>
-        <Text style={{textDecorationLine: 'underline', color: '#2a53c1', marginBottom: 100, marginLeft: '10%'}}
-          onPress={handleBack}
-        >
-          Back to 🏚️ Caregiver Profile
-        </Text>
+
         {fileTypeSelectModal && (
           <Modal
             visible={fileTypeSelectModal} // Changed from Visible to visible
@@ -974,7 +1228,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fffff8'
   },
   scroll: {
-    marginTop: 151,
+    marginTop: height * 0.25,
   },
   backTitle: {
     backgroundColor: 'black',
@@ -1015,6 +1269,7 @@ const styles = StyleSheet.create({
   profileTitle: {
     fontWeight: 'bold',
     color: 'white',
+    fontSize: RFValue(16)
   },
   marker: {
     width: 5,
@@ -1038,7 +1293,7 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 10,
     margin: '5%',
-    // marginBottom: 100,
+    marginBottom: 100,
     borderWidth: 1,
     borderColor: 'grey',
     overflow: 'hidden',
@@ -1115,11 +1370,10 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   subBtn: {
-    marginTop: 0,
-    padding: 10,
+    padding: RFValue(10),
     backgroundColor: '#A020F0',
     color: 'white',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   drinksButton: {
     fontSize: 18,
@@ -1147,13 +1401,29 @@ const styles = StyleSheet.create({
   },
   chooseFile: {
     width: '30%', 
-    height: 30, 
+    height: RFValue(30), 
     flexDirection: 'row', 
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f0f0f0',
     borderWidth: 1,
     borderColor: 'black'
+  },
+  saveFile: {
+    width: 80, 
+    height: 25, 
+    flexDirection: 'row', 
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f0f0f0',
+    borderWidth: 1,
+    borderColor: 'black'
+  },
+  saveFileBtn: {
+    fontWeight: '400', 
+    padding: 0, 
+    fontSize: RFValue(9), 
+    color: 'black',
   },
   modalContainer: {
     flex: 1,
@@ -1227,8 +1497,8 @@ const styles = StyleSheet.create({
     paddingRight: 10
   },
   btnSheet: {
-		height: 100,
-		width:100,
+    height: RFValue(80),
+    width: RFValue(80),
 		justifyContent: "center",
 		alignItems: "center",
 		borderRadius: 10,

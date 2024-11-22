@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Image, StyleSheet, ScrollView, StatusBar, TouchableOpacity } from 'react-native';
+import { View, Image, StyleSheet, ScrollView, StatusBar, TouchableOpacity, Dimensions } from 'react-native';
 import { Text } from 'react-native-paper';
 import images from '../../assets/images';
 import MFooter from '../../components/Mfooter';
@@ -8,6 +8,9 @@ import SubNavbar from '../../components/SubNavbar';
 import ImageButton from '../../components/ImageButton';
 import { useAtom } from 'jotai';
 import { firstNameAtom, lastNameAtom, contactPhoneAtom, contactEmailAtom, avatarAtom } from '../../context/FacilityAuthProvider'
+import { RFValue } from 'react-native-responsive-fontsize';
+
+const { width, height } = Dimensions.get('window');
 
 export default function FacilityProfile ({ navigation }) {
   const [firstName, setFirstName] = useAtom(firstNameAtom);
@@ -32,14 +35,10 @@ export default function FacilityProfile ({ navigation }) {
 
   return (
       <View style={styles.container}>
-        <StatusBar 
-          translucent backgroundColor="transparent"
-        />
+        <StatusBar translucent backgroundColor="transparent"/>
         <MHeader navigation={navigation} />
         <SubNavbar navigation={navigation} name={"FacilityLogin"}/>
-        <ScrollView style={{width: '100%', marginTop: 157}}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView style={{width: '100%', marginTop: height * 0.25}} showsVerticalScrollIndicator={false}>
           <View style={styles.topView}>
             <Image
               source={images.mark}
@@ -59,7 +58,7 @@ export default function FacilityProfile ({ navigation }) {
               <Text style={styles.profileTitle}>FACILITY PROFILE</Text>
             </View>
             {avatar.content && <Image
-              source={{ uri: `data:image/jpeg;base64,${avatar.content}` }}
+              source={{ uri: `${avatar.content}` }}
               resizeMode="cover"
               style={styles.nurse}
             />}
@@ -73,19 +72,11 @@ export default function FacilityProfile ({ navigation }) {
                   <Text style={styles.titles}>{item.title}</Text>
                   <Text style={[
                     styles.content, 
-                    item.title == "Phone" || item.title == "Email" ? {color: '#2a53c1', textDecorationLine:'underline', width: '100%'} : {}
+                    item.title == "Phone" || item.title == "email" ? {color: '#2a53c1', textDecorationLine:'underline', width: '100%', fontSize: RFValue(15)} : {}
                   ]}>{item.content}</Text>
                 </View>
               )
             }
-            {/* <MapView
-              initialRegion={{
-                latitude: 37.78825,
-                longitude: -122.4324,
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.0421,
-              }}
-            /> */}
           </View>
         </ScrollView>
         <MFooter />
@@ -103,8 +94,8 @@ const styles = StyleSheet.create({
     width: '100%'
   },
   mark: {
-    width:225,
-    height: 68,
+    width:RFValue(225),
+    height: RFValue(68),
   },
   topView: {
     marginTop: 50,
@@ -157,8 +148,8 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   imageButton: {
-    marginLeft: '10%',
-    width: '80%',
+    marginLeft: '5%',
+    width: '90%',
     justifyContent: 'center',
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -184,14 +175,14 @@ const styles = StyleSheet.create({
   },
   titles: {
     fontWeight: 'bold',
-    fontSize: 16,
-    lineHeight: 40,
+    fontSize: RFValue(16),
+    lineHeight: RFValue(40),
     width: '100%'
   },
   content: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     width: '100%',
-    lineHeight: 40,
+    lineHeight: RFValue(40),
   },
   profileTitleBg: {
     backgroundColor: '#BC222F',
@@ -206,14 +197,16 @@ const styles = StyleSheet.create({
   profileTitle: {
     fontWeight: 'bold',
     color: 'white',
+    fontSize: RFValue(16)
   },
   nurse: {
-    width: 200,
-    height: 200
+    width: RFValue(200),
+    height: RFValue(200)
   },
   name: {
-    fontSize: 20,
-    marginVertical: 10,
+    fontSize: RFValue(16),
+    marginVertical: RFValue(10),
+    fontWeight: 'bold'
   },
   edit: {
     backgroundColor: '#BC222F',

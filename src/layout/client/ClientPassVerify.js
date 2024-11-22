@@ -16,6 +16,7 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 const CELL_COUNT = 6;
 
@@ -59,7 +60,7 @@ export default function ClientPassVerify ({ navigation }) {
     return (
       <Text
         key={index}
-        style={[styles.cell, isFocused && styles.focusCell,{ borderWidth: 1, borderColor }]}
+        style={[styles.cell, isFocused && styles.focusCell, {  borderWidth: 1, borderColor }]}
         onLayout={getCellOnLayoutHandler(index)}>
         {textChild}
       </Text>
@@ -67,16 +68,11 @@ export default function ClientPassVerify ({ navigation }) {
   };
 
   const handleSubmit = async () => {
-    console.log('email: ', email, value);
     handleCredentials('verifyCode', value)
-    const response = await VerifyCodeSend({verifyCode: value}, 'clinical');
-    console.log(response)
+    const response = await VerifyCodeSend({verifyCode: value, email: email}, 'clinical');
     if (!response.error) {
-      console.log('success');
-      
       navigation.navigate('ClientResetPassword')
-    }
-    else {
+    } else {
       Alert.alert(
         'Failed!',
         `${response.error}`,
@@ -100,7 +96,7 @@ export default function ClientPassVerify ({ navigation }) {
         <StatusBar 
           translucent backgroundColor="transparent"
         />
-        <MHeader navigation={navigation} />
+        <MHeader navigation={navigation} back={true} />
         <View style={{width: '100%', height: '60%', marginTop: 110, justifyContent:'center', alignItems: 'center', display: 'flex'}}
         >
           <View style={styles.authInfo}>
@@ -204,7 +200,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F2',
     marginTop: 140
   },
-  btn: {flexDirection: 'column',
+  btn: {
+    flexDirection: 'column',
     gap: 20,
     marginBottom: 30,
     width: '90%'
@@ -212,9 +209,9 @@ const styles = StyleSheet.create({
   subBtn: {
     marginTop: 0,
     padding: 10,
-    backgroundColor: '#447feb',
-    color: 'black',
-    fontSize: 16,
+    backgroundColor: '#A020F0',
+    color: '#fff',
+    fontSize: RFValue(16),
   },
   verify: {
       width: "100%",
@@ -225,11 +222,14 @@ const styles = StyleSheet.create({
       marginRight: "4%"
   },
   cell: {
-    width: 40,
-    height: 40,
-    lineHeight: 40,
-    fontSize: 40,
+    width: RFValue(30),
+    height: RFValue(40),
+    lineHeight: RFValue(40),
+    fontSize: RFValue(20),
+    fontWeight: '700',
+    textAlign: 'center',
     marginLeft: "2.8%",
+    borderRadius: 10,
     backgroundColor: '#dddddd',
     color: 'black'
   },

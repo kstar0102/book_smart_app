@@ -1,16 +1,18 @@
-import React, { useEffect } from 'react';
-import { View, Image, StyleSheet, ScrollView, StatusBar } from 'react-native';
-import { Text, PaperProvider, DataTable } from 'react-native-paper';
+import React from 'react';
+import { View, Image, StyleSheet, ScrollView, StatusBar, TouchableOpacity } from 'react-native';
+import { Text } from 'react-native-paper';
 import images from '../../assets/images';
-import  { useNavigation, useRoute } from '@react-navigation/native';
-import HButton from '../../components/Hbutton'
 import MFooter from '../../components/Mfooter';
 import MHeader from '../../components/Mheader';
 import SubNavbar from '../../components/SubNavbar';
 import ImageButton from '../../components/ImageButton';
 import { useAtom } from 'jotai';
 import { firstNameAtom, lastNameAtom, emailAtom, userRoleAtom, caregiverAtom } from '../../context/ClinicalAuthProvider';
+import { RFValue } from "react-native-responsive-fontsize";
+import { Dimensions } from 'react-native';
+import AnimatedHeader from '../AnimatedHeader';
 
+const { width, height } = Dimensions.get('window');
 
 export default function MyHome ({ navigation }) {
   const [firstName, setFirstName] = useAtom(firstNameAtom);
@@ -19,66 +21,62 @@ export default function MyHome ({ navigation }) {
   const [userRole, setUserRole] = useAtom(userRoleAtom);
   const [caregiver, setCaregiver] = useAtom(caregiverAtom);
   const handleNavigate = (navigateUrl) => {
-      navigation.navigate(navigateUrl);
-  }
+    navigation.navigate(navigateUrl);
+  };
 
   const userInfo = [
     {title: 'Name', content: firstName + ' ' + lastName},
     {title: 'Email', content: email},
     {title: 'User Roles', content: userRole},
     {title: 'Caregiver', content: caregiver},
-  ]
-
-  // const userInfo = [
-  //   {title: 'Name', content: "Dale"},
-  //   {title: 'Email', content: "dalewong008@gmail.com"},
-  //   {title: 'User Roles', content: 'Clinician'},
-  //   {title: 'Caregiver', content: ''},
-  // ]
+  ];
 
   return (
       <View style={styles.container}>
-        <StatusBar 
-            translucent backgroundColor="transparent"
-        />
+        <StatusBar translucent backgroundColor="transparent"/>
         <MHeader navigation={navigation} />
         <SubNavbar navigation={navigation} name={'ClientSignIn'}/>
-        <ScrollView style={{width: '100%', marginTop: 157}}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView style={{width: '100%', marginTop: height * 0.25}} showsVerticalScrollIndicator={false}>
           <View style={styles.topView}>
-            <Image
+            {/* <Image
               source={images.mark}
-              resizeMode="cover"
+              resizeMode="contain"
               style={styles.mark}
             />
-            <View style={styles.bottomBar}/>
+            <View style={styles.bottomBar}/> */}
+            <TouchableOpacity onPress={() => navigation.navigate("ShiftListing")}>
+              <AnimatedHeader title="Book Shifts Now!" style={{ paddingHorizontal: 30 }} />
+            </TouchableOpacity>
           </View>
           <View style={styles.imageButton}>
             <ImageButton title={"My Profile"} onPress={() => handleNavigate('EditProfile')} />
-            <ImageButton title={"All Shift Listings"} onPress={() => handleNavigate('ShiftListing')} />
+            <ImageButton title={"Electronic Timesheet"} onPress={() => handleNavigate('TimesheetForm')} />
             <ImageButton title={"My Shifts"} onPress={() => handleNavigate('Shift')} />
             <ImageButton title={"My Reporting"} onPress={() => handleNavigate('Reporting')} />
           </View>
-          <View style={styles.profile}>
-            {
-              userInfo.map((item, index) => 
-                <View key={index} style={{flexDirection: 'row'}}>
-                  {/* <Text style={styles.titles}>{item.title}</Text> */}
-                  <Text style={[
-                    styles.content, 
-                    item.title == "Name" ? {fontWeight: 'bold'} : 
-                    item.title == "Email" ? {color: '#2a53c1', textDecorationLine:'underline'} : {}
-                  ]}>{item.content}</Text>
-                </View>
-              )
-            }
+          <View style={{ flex:1, justifyContent: 'center', width: '100%', alignItems: 'center' }}>
+            <View style={styles.profile}>
+              {
+                userInfo.map((item, index) => 
+                  <View key={index} style={{flexDirection: 'row'}}>
+                    <Text style={[
+                      styles.content, 
+                      item.title == "Name" ? {fontWeight: 'bold'} : 
+                      item.title == "Email" ? {color: '#2a53c1', textDecorationLine:'underline'} : {}
+                    ]}>{item.content}</Text>
+                  </View>
+                )
+              }
+            </View>
+
+            <Image
+              source={images.homepage}
+              resizeMode="cover"
+              style={styles.homepage}
+            />
           </View>
-          <Image
-            source={images.homepage}
-            resizeMode="cover"
-            style={styles.homepage}
-          />
+          
+          
         </ScrollView>
         <MFooter />
       </View>
@@ -90,12 +88,12 @@ const styles = StyleSheet.create({
     height: '100%',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     position: 'relative',
     width: '100%'
   },
   topView: {
-    marginTop: 50,
+    marginTop: RFValue(5),
     marginLeft: '10%',
     width: '80%',
     flexDirection: 'column',
@@ -103,67 +101,55 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   mark: {
-    width:225,
-    height: 68,
-    marginBottom: 30
+    width: width * 0.65,
+    height: height * 0.1,
+    marginBottom: RFValue(30)
   },
   bottomBar: {
-    height: 5,
+    height: RFValue(5),
     backgroundColor: '#C0D1DD',
     width: '100%'
   },
-  text: {
-    fontSize: 20,
-    color: 'black',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 30,
-  },
+ 
   imageButton: {
     width: '90%',
     marginLeft: '5%',
     justifyContent: 'center',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: RFValue(10),
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 30,
+    marginTop: RFValue(30),
     marginLeft: '5%'
   },
   homepage: {
-    // paddingHorizontal: 30,
-    // paddingVertical: 70,
-    marginLeft: '15%',
-    width: 250,
-    height: 200,
-    marginTop: 30,
-    marginBottom: 100
+    width: RFValue(250),
+    height: RFValue(200),
+    marginTop: RFValue(30),
+    marginBottom: RFValue(100)
   },
   profile: {
-    marginTop: 20,
+    marginTop: RFValue(20),
     width: '84%',
-    marginLeft: '7%',
-    padding: 20,
+    padding: RFValue(20),
     backgroundColor: '#c2c3c42e',
-    borderRadius: 30,
-    borderWidth: 2,
+    borderRadius: RFValue(30),
+    borderWidth: RFValue(2),
     borderColor: '#b0b0b0',
-    // elevation: 1,
-    // // shadowColor: 'rgba(0, 0, 0, 0.4)',
-    // // shadowOffset: { width: 1, height: 1 },
-    // shadowRadius: 0,
-  },
-  titles: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    lineHeight: 40,
-    width: '40%'
   },
   content: {
-    fontSize: 16,
-    // width: '60%',
-    lineHeight: 40,
-  }
+    fontSize: RFValue(16),
+    lineHeight: RFValue(30),
+  },
+  headBar: {
+    textAlign: 'center',
+    backgroundColor: '#BC222F',
+    color: 'white',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    fontSize: RFValue(18),
+    fontWeight: 'bold'
+  },
 });
-  

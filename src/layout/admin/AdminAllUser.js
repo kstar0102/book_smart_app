@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableWithoutFeedback, Alert, Modal, View, TextInput, Image, StyleSheet, ScrollView, StatusBar, TouchableOpacity } from 'react-native';
+import { TouchableWithoutFeedback, Alert, Modal, View, Dimensions, TextInput, Image, StyleSheet, ScrollView, StatusBar, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import images from '../../assets/images';
 import MFooter from '../../components/Mfooter';
@@ -11,6 +11,9 @@ import AHeader from '../../components/Aheader';
 import { useFocusEffect } from '@react-navigation/native';
 import AnimatedHeader from '../AnimatedHeader';
 import Loader from '../Loader';
+import { RFValue } from 'react-native-responsive-fontsize';
+
+const { width, height } = Dimensions.get('window');
 
 export default function AdminAllUser({ navigation }) {
   const [data, setData] = useState([]);
@@ -32,7 +35,7 @@ export default function AdminAllUser({ navigation }) {
   const [pageList, setPageList] = useState([
     {label: 'Page 1', value: 1}
   ]);
-  const widths = [120, 250, 150, 150, 150, 80];
+  const widths = [200, 300, 150, 250, 150, 120];
   const tableHead = [
     'Name',
     'Email',
@@ -354,7 +357,7 @@ export default function AdminAllUser({ navigation }) {
       <AHeader navigation={navigation}  currentPage={5} />
       <SubNavbar navigation={navigation} name={"AdminLogin"}/>
       <ScrollView
-        style={{ width: '100%', marginTop: 155 }}
+        style={{ width: '100%', marginTop: height * 0.25 }}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.topView}>
@@ -382,8 +385,10 @@ export default function AdminAllUser({ navigation }) {
         <View>
           <View style={styles.body}>
             <View style={styles.modalBody}>
-              <View style={[styles.profileTitleBg, { marginLeft: 0, marginTop: 30 }]}>
-                <Text style={styles.profileTitle}>🖥️ ALL PLATFORM USERS</Text>
+              <View style={{flexDirection: 'row',  width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+                <View style={[styles.profileTitleBg, { marginLeft: 0, marginTop: 30 }]}>
+                  <Text style={styles.profileTitle}>🖥️ ALL PLATFORM USERS</Text>
+                </View>
               </View>
               <View style={styles.searchBar}>
                 <TextInput
@@ -448,7 +453,7 @@ export default function AdminAllUser({ navigation }) {
                   />
                 )}
               />
-              <ScrollView horizontal={true} style={{ width: '95%', borderWidth: 1, marginBottom: 30, borderColor: 'rgba(0, 0, 0, 0.08)' }}>
+              <ScrollView horizontal={true} style={{ width: '100%', borderWidth: 1, marginBottom: 30, borderColor: 'rgba(0, 0, 0, 0.08)' }}>
                 <Table >
                   <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: '#ccffff' }}>
                     {tableHead.map((item, index) => (
@@ -495,7 +500,7 @@ export default function AdminAllUser({ navigation }) {
                                   ]);
                                 }}
                               >
-                                <Text style={styles.profileTitle}>Del</Text>
+                                <Text style={styles.profileTitle}>Delete</Text>
                               </TouchableOpacity>
                             </View>
                           );
@@ -531,7 +536,7 @@ export default function AdminAllUser({ navigation }) {
                 </View>
                 <View style={[styles.body, { marginBottom: 100 }]}>
                   <ScrollView>
-                    <Text style={{ fontSize: 15, marginBottom: 5, marginTop: 20 }}>Where</Text>
+                    <Text style={{ fontSize: RFValue(15), marginBottom: 5, marginTop: 20 }}>Where</Text>
                     {filters.map((filter, index) => (
                       <View key={index} style={styles.filterRow}>
                         {index !== 0 && (
@@ -653,9 +658,9 @@ export default function AdminAllUser({ navigation }) {
                     <Image source = {images.close} style={{width: 20, height: 20,}}/>
                   </TouchableOpacity>
                 </View>
-                <View style={styles.body}>
-                  <View style={styles.modalBody}>
-                    <Text style={{ fontSize: 15, marginBottom: 5, marginTop: 20 }}>User Status</Text>
+                <View style={[styles.body, { marginBottom: 0, marginTop: 0 }]}>
+                  <View style={[styles.modalBody, { marginTop: 0 }]}>
+                    <Text style={{ fontSize: RFValue(15), marginBottom: 5, marginTop: 20 }}>User Status</Text>
                     <Dropdown
                       style={[styles.dropdown, {width: '100%'}, isFocus && { borderColor: 'blue' }]}
                       placeholderStyle={styles.placeholderStyle}
@@ -718,7 +723,6 @@ const styles = StyleSheet.create({
     marginBottom: 30
   },
   topView: {
-    marginTop: 30,
     marginLeft: '10%',
     width: '80%',
     position: 'relative'
@@ -737,7 +741,7 @@ const styles = StyleSheet.create({
     top: 10
   },
   title: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'left',
@@ -751,7 +755,7 @@ const styles = StyleSheet.create({
     width: '100%'
   },
   text: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: 'black',
     fontWeight: '300',
     textAlign: 'center',
@@ -798,7 +802,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   name: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     marginBottom: 10,
     fontStyle: 'italic',
     color: '#22138e',
@@ -846,7 +850,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   headerText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
   },
   closeButton: {
@@ -881,8 +885,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'flex-start',
-    marginTop: 30,
-    paddingLeft: '5%'
+    marginTop: 30
   },
   searchBar: {
     flexDirection: 'row',
@@ -974,15 +977,15 @@ const styles = StyleSheet.create({
     top: 8,
     zIndex: 999,
     paddingHorizontal: 8,
-    fontSize: 14,
+    fontSize: RFValue(14),
   },
   placeholderStyle: {
     color: 'black',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   selectedTextStyle: {
     color: 'black',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   itemTextStyle: {
     color: 'black'
@@ -993,20 +996,17 @@ const styles = StyleSheet.create({
   },
   inputSearchStyle: {
     height: 40,
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   button: {
-    backgroundColor: '#007BFF', // Button color
-    padding: 10,    
-    marginLeft: '35%',
+    backgroundColor: '#A020F0', // Button color
+    padding: 10,
     marginTop: 30,           // Padding inside the button
     borderRadius: 5,          // Rounded corners
-    
   },
   buttonText: {
-    textAlign: 'center',
     color: 'white',            // Text color
-    fontSize: 16,              // Text size
+    fontSize: RFValue(16),              // Text size
   },
   input: {
     backgroundColor: 'white', 

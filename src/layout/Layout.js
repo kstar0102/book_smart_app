@@ -6,7 +6,6 @@
  */
 
 import React from 'react';
-import { NativeRouter, Route, Routes } from 'react-router-native';
 import Dashboard from './Dashboard';
 import MHeader from '../components/Mheader';
 import MFooter from '../components/Mfooter';
@@ -62,6 +61,9 @@ import AddNewFacility from './admin/AddNewFacility.js';
 import CaregiverProfile from './admin/CaregiverProfile.js';
 import UserFileViewer from './UserFileViewer.js';
 import UploadTimesheet from './client/UploadTimesheet.js';
+import VerifyCation from './admin/Verifycation.js';
+import TimesheetForm from './client/TimesheetForm.js';
+import AdminFileViewer from './AdminFileViewer.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -101,6 +103,16 @@ function Layout() {
       <Stack.Screen 
         name= 'UserFileViewer'
         component = {UserFileViewer}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen 
+        name= 'TimesheetForm'
+        component = {TimesheetForm}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen 
+        name= 'Verifycation'
+        component = {VerifyCation}
         options={{headerShown: false}}
       />
       <Stack.Screen 
@@ -277,6 +289,11 @@ function Layout() {
       <Stack.Screen 
         name= 'CaregiverTimeSheet'
         component = {CaregiverTimeSheet}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen 
+        name= 'AdminFileViewer'
+        component = {AdminFileViewer}
         options={{headerShown: false}}
       />
       <Stack.Screen 

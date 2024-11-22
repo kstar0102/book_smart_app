@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, TextInput, View, Image, TouchableWithoutFeedback, StyleSheet, ScrollView, StatusBar, Alert, TouchableOpacity } from 'react-native';
+import { Modal, TextInput, View, Image, TouchableWithoutFeedback, StyleSheet, Dimensions, ScrollView, StatusBar, Alert, TouchableOpacity } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { StarRatingDisplay } from 'react-native-star-rating-widget';
 import RadioGroup from 'react-native-radio-buttons-group';
@@ -19,6 +19,9 @@ import DocumentPicker from 'react-native-document-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import RNFS from 'react-native-fs'
 import Loader from '../Loader';
+import { RFValue } from 'react-native-responsive-fontsize';
+
+const { width, height } = Dimensions.get('window');
 
 export default function AllJobShiftListing({ navigation }) {
   const [data, setData] = useState([]);
@@ -38,7 +41,6 @@ export default function AllJobShiftListing({ navigation }) {
   const [lunch, setLunch] = useState('');
   const [content, setContent] = useState('');
   const [approved, setApproved] = useState(false);
-  const [clinicians, setClinicians] = useState([]);
   const [isJobEditModal, setIsJobEditModal] = useState(false);
   const [accouts, setAccounts] = useState([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -325,7 +327,7 @@ export default function AllJobShiftListing({ navigation }) {
   const handleSubmit = () => {
     setIsSubmitted(true);
     toggleAddFilterModal();
-    const requestData = { search: search, page: curPage, filters: filters };
+    const requestData = { search: search, page: curPage };
     getData(requestData, true);
   };
 
@@ -399,10 +401,7 @@ export default function AllJobShiftListing({ navigation }) {
     'Delete'
   ];
 
-  const getData = async (requestData = { search: search, page: curPage, filters: filters }, isFilter = isSubmitted ) => {
-    // if (!isFilter) {
-    //   requestData.filters = [];
-    // }
+  const getData = async (requestData = { search: search, page: curPage }, isFilter = isSubmitted ) => {
     setLoading(true);
     let result = await Jobs(requestData, 'jobs', 'Admin');
     if(!result) {
@@ -417,27 +416,6 @@ export default function AllJobShiftListing({ navigation }) {
       setData(result.dataArray);
       setLoading(false);
     }
-    const uniqueValues = new Set();
-    const transformed = [];
-    
-    let clinicianData = await Clinician('clinical/clinician', 'Admin');
-    const extractData = clinicianData.map(item => {
-      const firstName = item[1];
-      const lastName = item[2];
-      return firstName ? `${firstName} ${lastName}` : null;
-    });
-
-    const uniqueNames = Array.from(new Set(extractData.filter(name => name)));
-
-    uniqueNames.forEach(subarray => {
-      const value = subarray;
-      if (!uniqueValues.has(value)) {
-          uniqueValues.add(value);
-          transformed.push({ label: value, value: value });
-      }
-    });
-
-    setClinicians(transformed);
   }
 
   const getAccounts = async () => {
@@ -520,7 +498,7 @@ export default function AllJobShiftListing({ navigation }) {
       // getLocation();
       // getDegree();
       // getNurseList();
-      getData();
+      // getData();
       setLoading(false);
     }, [])
   );
@@ -542,7 +520,7 @@ export default function AllJobShiftListing({ navigation }) {
 
   const [value, setValue] = useState(null);
   const [isFocus1, setIsFocus1] = useState(false); 
-  const widths = [150, 130, 100, 100, 200, 120, 100, 200, 150, 120, 150, 80, 150, 200, 200, 150, 250, 250, 100];
+  const widths = [150, 130, 100, 150, 200, 120, 150, 200, 150, 150, 150, 80, 150, 200, 200, 150, 250, 250, 100];
   const [modal, setModal] = useState(false)
   const toggleModal = () => {
     setModal(!modal);
@@ -1133,12 +1111,13 @@ export default function AllJobShiftListing({ navigation }) {
   const handleReset = (event) => {
     event.persist();
     setSearch(''); 
-    getData({ search: '', page: curPage, filters: filters });
+    getData({ search: '', page: curPage });
   };
   
   const handleSearch = (event) => {
     event.persist();
-    getData();
+    setCurPage(1);
+    getData({ search: search, page: 1 });
   };
 
   useEffect(() => {
@@ -1286,49 +1265,54 @@ export default function AllJobShiftListing({ navigation }) {
       />
       <AHeader navigation={navigation}  currentPage={1} />
       <SubNavbar navigation={navigation} name={"AdminLogin"}/>
-      <ScrollView style={{ width: '100%', marginTop: 157 }}
+      <ScrollView style={{ width: '100%', marginTop: height * 0.25 }}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.topView}>
           <AnimatedHeader title="COMPANY JOBS / SHIFTS" />
           <View style={styles.bottomBar} />
         </View>
-        <View style={{ marginTop: 30, flexDirection: 'row', width: '90%', marginLeft: '5%', gap: 10 }}>
-          <TouchableOpacity style={[styles.subBtn, {}]} onPress={() => navigation.navigate('AdminJobShift')}>
+        <View style={{ marginTop: 30, flexDirection: 'row', width: '90%', marginLeft: '5%', gap: 10, paddingLeft: 10 }}>
+          <TouchableOpacity style={[styles.subBtn, { width: 'auto' }]} onPress={() => navigation.navigate('AdminJobShift')}>
             <View style={{ backgroundColor: 'white', borderRadius: 10, width: 16, height: 16, justifyContent: 'center', alignItems: 'center', display: 'flex' }}>
-              <Text style={{ fontWeight: 'bold', color: '#194f69', textAlign: 'center', marginTop: 0, lineHeight: 16 }}>+</Text>
+              <Text style={{ fontWeight: 'bold', color: '#194f69', textAlign: 'center', lineHeight: 15 }}>+</Text>
             </View>
             <Text style={styles.profileTitle}>Add A New Job / Shift
             </Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.profile}>
-          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ backgroundColor: '#000080', color: 'white', paddingHorizontal: 5 }}>TOOL TIPS</Text>
-          </View>
-          <View style={{ flexDirection: 'row' }}>
-            <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
-            <Text style={[styles.text, { textAlign: 'left', marginTop: 10 }]}>When A New "Job / Shift" is added the status will appear as <Text style={{ backgroundColor: '#ffff99' }}>"AVAILABLE"</Text> & will appear on Nurses Dashboard</Text>
-          </View>
-          <View style={{ flexDirection: 'row' }}>
-            <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 5 }} />
-            <Text style={[styles.text, { textAlign: 'left', marginTop: -5 }]}>Nurses can "Bid" or show interest on all "Job / Shifts" - Available</Text>
-          </View>
-          <View style={{ flexDirection: 'row' }}>
-            <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
-            <Text style={[styles.text, { textAlign: 'left', marginTop: 10 }]}>Admins can view all bids and award a shift to the nurse of choice, once awarded the Job / Shift will update to a stus of <Text style={{ backgroundColor: '#ccffff' }}>"AWARDED"</Text></Text>
-          </View>
-          <View style={{ flexDirection: 'row' }}>
-            <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
-            <Text style={[styles.text, { textAlign: 'left', marginTop: 10 }]}>Once the Nurse has completed the "Job / Shift" and uploads there timesheet, the status will update to <Text style={{ backgroundColor: '#ccffcc' }}>"COMPLETED"</Text></Text>
+        <View style = {{ flex:1, justifyContent:'center', alignItems: 'center', width: '100%'}}>
+          <View style={styles.profile}>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ backgroundColor: '#000080', color: 'white', paddingHorizontal: 5, fontSize: RFValue(15)}}>TOOL TIPS</Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
+              <Text style={[styles.text, { textAlign: 'left', marginTop: 10, fontSize: RFValue(14) }]}>When A New "Job / Shift" is added the status will appear as <Text style={{ backgroundColor: '#ffff99' }}>"AVAILABLE"</Text> & will appear on Nurses Dashboard</Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
+              <Text style={[styles.text, { textAlign: 'left', marginTop: 10, fontSize: RFValue(14) }]}>Nurses can "Bid" or show interest on all "Job / Shifts" - Available</Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
+              <Text style={[styles.text, { textAlign: 'left', marginTop: 10, fontSize: RFValue(14) }]}>Admins can view all bids and award a shift to the nurse of choice, once awarded the Job / Shift will update to a stus of <Text style={{ backgroundColor: '#ccffff' }}>"AWARDED"</Text></Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
+              <Text style={[styles.text, { textAlign: 'left', marginTop: 10, fontSize: RFValue(14) }]}>Once the Nurse has completed the "Job / Shift" and uploads there timesheet, the status will update to <Text style={{ backgroundColor: '#ccffcc' }}>"COMPLETED"</Text></Text>
+            </View>
           </View>
         </View>
+        
         <View>
           <View style={styles.body}>
             <View style={styles.bottomBar} />
             <View style={styles.modalBody}>
-              <View style={[styles.profileTitleBg, { marginLeft: 0, marginTop: 30 }]}>
-                <Text style={styles.profileTitle}>🖥️ ALL JOB / SHIFT LISTINGS</Text>
+              <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                <View style={[styles.profileTitleBg, { marginLeft: '-5%' }]}>
+                  <Text style={styles.profileTitle}>🖥️ ALL JOB / SHIFT LISTINGS</Text>
+                </View>
               </View>
               <View style={styles.searchBar}>
                 <TextInput
@@ -1574,106 +1558,6 @@ export default function AllJobShiftListing({ navigation }) {
           </View>
           
           <Modal
-            visible={modal}
-            transparent= {true}
-            animationType="slide"
-            onRequestClose={() => {
-              setModal(!modal);
-            }}
-          >
-            <View style={styles.modalContainer}>
-              <View style={styles.calendarContainer}>
-                <View style={styles.header}>
-                  <Text style={styles.headerText}>{tableHead[modalItem]}</Text>
-                  <TouchableOpacity style={{width: 20, height: 20, }} onPress={toggleModal}>
-                    <Image source = {images.close} style={{width: 20, height: 20,}}/>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.body}>
-                  <View style={styles.modalBody}>
-                    {
-                      (modalItem === 1) || (modalItem === 4) || (modalItem === 9) ?
-                        <Dropdown
-                          style={[styles.dropdown, {width: '100%'}, isFocus && { borderColor: 'blue' }]}
-                          placeholderStyle={styles.placeholderStyle}
-                          selectedTextStyle={styles.selectedTextStyle}
-                          inputSearchStyle={styles.inputSearchStyle}
-                          itemTextStyle={styles.itemTextStyle}
-                          iconStyle={styles.iconStyle}
-                          data={
-                            modalItem === 1 ? clinicians :
-                            modalItem === 4 ?  location :
-                            (modalItem === 9) && jobStatus
-                          }
-                          // search
-                          maxHeight={300}
-                          labelField="label"
-                          valueField="value"
-                          placeholder={label}
-                          // searchPlaceholder="Search..."
-                          value={label}
-                          onFocus={() => setJobIsFocus(true)}
-                          onBlur={() => setJobIsFocus(false)}
-                          onChange={item => {
-                            setLabel(item.label);
-                            setJobIsFocus(false);
-                          }}
-                          renderLeftIcon={() => (
-                            <View
-                              style={styles.icon}
-                              color={isJobFocus ? 'blue' : 'black'}
-                              name="Safety"
-                              size={20}
-                            />
-                          )}
-                        />
-                      :
-                      (modalItem === 3) || (modalItem === 6) || (modalItem === 10) ?
-                        (<TextInput
-                          style={[styles.searchText, {width: '100%', paddingTop: 0, paddingBottom: 0, textAlignVertical: 'center'}]}
-                          placeholder=""
-                          onChangeText={e => setLabel(e)}
-                          value={label || ''}
-                        />)
-                      :
-                      modalItem === 5 ?
-                        <View style={{flexDirection: 'column', width: '100%', gap: 5, position: 'relative'}}>
-                          <TouchableOpacity onPress={() => {setShowCalendar(true), console.log(showCalendar)}} style={{width: '100%', height: 40}}>
-                            <View pointerEvents="none">
-                              <TextInput
-                                style={[styles.searchText, {width: '100%', paddingTop: 0, textAlignVertical: 'center', color: 'black', paddingBottom: 0, fontSize: 18}]}
-                                placeholder=""
-                                value={label}
-                                editable={false}
-                              />
-                            </View>
-                          </TouchableOpacity>
-                          {showCalendar 
-                            && 
-                            <>
-                              <DatePicker
-                                date={date}
-                                onDateChange={(day) => handleDay(day)}
-                                mode="date"
-                                theme='light'
-                                androidVariant="native"
-                              />
-                              <Button title="confirm" onPress={(day) =>{setShowCalendar(!showCalendar);}} />
-                            </>
-                          }
-                        </View>
-                      :
-                      <></>
-                    }
-                    <TouchableOpacity style={styles.button} onPress={handlePress} underlayColor="#0056b3">
-                      <Text style={styles.buttonText}>Update</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </Modal>
-          <Modal
             visible={isJobDetailModal}
             transparent= {true}
             animationType="slide"
@@ -1752,12 +1636,12 @@ export default function AllJobShiftListing({ navigation }) {
                       </View>
                       <View style={{flexDirection: 'row', width: '100%'}}>
                         <TouchableOpacity style={[styles.button, { marginTop: 10, paddingHorizontal: 20 }]} onPress={handleShowJobEditModal} underlayColor="#0056b3">
-                          <Text style={[styles.buttonText, { fontSize: 12 }]}>Edit Job / Shift</Text>
+                          <Text style={[styles.buttonText, { fontSize: RFValue(12) }]}>Edit Job / Shift</Text>
                         </TouchableOpacity>
                       </View>
-                      <View style={{flexDirection: 'row', width: '100%'}}>
+                      <View style={{flexDirection: 'row', width: '95%', justifyContent: 'center', alignItems: 'center'}}>
                         <View style={[styles.profileTitleBg, { marginLeft: 0, marginTop: 30 }]}>
-                          <Text style={[styles.profileTitle, { fontSize: 12 }]}>ALL BIDS / OFFERS FOR SHIFT</Text>
+                          <Text style={[styles.profileTitle, { fontSize: RFValue(12) }]}>ALL BIDS / OFFERS FOR SHIFT</Text>
                         </View>
                       </View>
                       <View style={{flexDirection: 'row', width: '100%', paddingRight: '5%'}}>
@@ -1824,7 +1708,7 @@ export default function AllJobShiftListing({ navigation }) {
                       </View>
                       <View style={{flexDirection: 'row', width: '100%'}}>
                         <View style={[styles.profileTitleBg, { marginLeft: 0, marginTop: 30, backgroundColor: 'green' }]}>
-                          <Text style={[styles.profileTitle, { fontSize: 12 }]}>🖥️"CLICK "AWARDED"</Text>
+                          <Text style={[styles.profileTitle, { fontSize: RFValue(12) }]}>🖥️"CLICK "AWARDED"</Text>
                         </View>
                       </View>
                       <View style={{flexDirection: 'row', width: '100%'}}>
@@ -1833,7 +1717,7 @@ export default function AllJobShiftListing({ navigation }) {
                       </View>
                       <View style={{flexDirection: 'column', width: '100%', alignItems: 'flex-start', justifyContent: 'center'}}>
                         <View>
-                          <Text style={{ fontWeight: 'bold', marginTop: 20, fontSize: 14 }}>Bid Status</Text>
+                          <Text style={{ fontWeight: 'bold', marginTop: 20, fontSize: RFValue(14) }}>Bid Status</Text>
                         </View>
                         <View style={{ color: 'black' }}>
                           <RadioGroup 
@@ -1856,7 +1740,7 @@ export default function AllJobShiftListing({ navigation }) {
                         style={[styles.button, { marginTop: 10, paddingHorizontal: 20 }]}
                         onPress={() => handleChangeAwardStatus(selectedBidder[6], selectedJob?.jobId)} underlayColor="#0056b3"
                       >
-                        <Text style={[styles.buttonText, { fontSize: 12 }]}>Submit</Text>
+                        <Text style={[styles.buttonText, { fontSize: RFValue(12) }]}>Submit</Text>
                       </TouchableOpacity>
                     </View>
                   </ScrollView>
@@ -1927,13 +1811,13 @@ export default function AllJobShiftListing({ navigation }) {
                       <View style={styles.line}></View>
 
                       <View style={{flexDirection: 'row', width: '100%', gap: 10}}>
-                        <Text style={[styles.titles, {backgroundColor: '#ffff99', marginBottom: 5, paddingLeft: 2, fontSize: 20}]}>Hours Worked</Text>
-                        <Text style={[styles.content, { fontSize: 20 }]}>{selectedJob?.workedHours}</Text>
+                        <Text style={[styles.titles, {backgroundColor: '#ffff99', marginBottom: 5, paddingLeft: 2, fontSize: RFValue(20)}]}>Hours Worked</Text>
+                        <Text style={[styles.content, { fontSize: RFValue(20) }]}>{selectedJob?.workedHours}</Text>
                       </View>
 
                       <View style={{flexDirection: 'row', width: '100%'}}>
                         <View style={[styles.profileTitleBg, { marginLeft: 0, marginTop: 30 }]}>
-                          <Text style={[styles.profileTitle, { fontSize: 12 }]}>ADD HOURS</Text>
+                          <Text style={[styles.profileTitle, { fontSize: RFValue(12) }]}>ADD HOURS</Text>
                         </View>
                       </View>
 
@@ -2081,7 +1965,7 @@ export default function AllJobShiftListing({ navigation }) {
                         style={[styles.button, { marginTop: 10, paddingHorizontal: 20 }]}
                         onPress={handlechangeHoursStatus} underlayColor="#0056b3"
                       >
-                        <Text style={[styles.buttonText, { fontSize: 12 }]}>Submit</Text>
+                        <Text style={[styles.buttonText, { fontSize: RFValue(12) }]}>Submit</Text>
                       </TouchableOpacity>
                     </View>
                   </ScrollView>
@@ -2212,7 +2096,7 @@ export default function AllJobShiftListing({ navigation }) {
                         style={[styles.button, { marginTop: 10, paddingHorizontal: 20 }]}
                         onPress={handlechangeJobInfo} underlayColor="#0056b3"
                       >
-                        <Text style={[styles.buttonText, { fontSize: 12 }]}>Submit</Text>
+                        <Text style={[styles.buttonText, { fontSize: RFValue(12) }]}>Submit</Text>
                       </TouchableOpacity>
                     </View>
                   </ScrollView>
@@ -2238,7 +2122,7 @@ export default function AllJobShiftListing({ navigation }) {
                 </View>
                 <View style={[styles.body, { marginBottom: 0 }]}>
                   <View style={[styles.modalBody, { paddingBottom: 10 }]}>
-                    <Text style={{ fontSize: 15, marginBottom: 5, marginTop: 20 }}>Job Status</Text>
+                    <Text style={{ fontSize: RFValue(15), marginBottom: 5, marginTop: 20 }}>Job Status</Text>
                     <Dropdown
                       style={[styles.dropdown, { width: '90%' }, isFocusJobStatus && { borderColor: 'blue' }]}
                       placeholderStyle={styles.placeholderStyle}
@@ -2303,7 +2187,7 @@ export default function AllJobShiftListing({ navigation }) {
                     </View>
                     <View style={{flexDirection: 'row', width: '95%'}}>
                       <TouchableOpacity title="Select File" onPress={handleShowSelectModal} style={styles.chooseFile}>
-                        <Text style={{fontWeight: '400', padding: 0, fontSize: 14}}>Choose File</Text>
+                        <Text style={{fontWeight: '400', padding: 0, fontSize: RFValue(14)}}>Choose File</Text>
                       </TouchableOpacity>
                       <TextInput
                         style={[styles.chooseFileinput, { width: '70%', color: 'black' }]}
@@ -2435,7 +2319,7 @@ export default function AllJobShiftListing({ navigation }) {
                 </View>
                 <View style={styles.body}>
                   <ScrollView>
-                    <Text style={{ fontSize: 15, marginBottom: 5, marginTop: 20 }}>Where</Text>
+                    <Text style={{ fontSize: RFValue(15), marginBottom: 5, marginTop: 20 }}>Where</Text>
                     {filters.map((filter, index) => (
                       <View key={index} style={styles.filterRow}>
                         {index !== 0 && (
@@ -2564,12 +2448,24 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
     paddingVertical: 20
 	},
+  btnSheet: {
+    height: RFValue(80),
+    width: RFValue(80),
+		justifyContent: "center",
+		alignItems: "center",
+		borderRadius: 10,
+		shadowOpacity: 0.5,
+		shadowRadius: 10,
+		margin: 5,
+		shadowColor: '#000',
+		shadowOffset: { width: 3, height: 3 },
+		marginVertical: 14, padding: 5,
+	},
   removeButton: {
     textAlign: 'center',
     color: 'white'
   },
   topView: {
-    marginTop: 30,
     marginLeft: '10%',
     width: '80%',
   },
@@ -2624,7 +2520,7 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   title: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'left',
@@ -2632,13 +2528,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   bottomBar: {
-    marginTop: 30,
+    marginTop: RFValue(30),
     height: 5,
     backgroundColor: '#4f70ee1c',
     width: '100%',
+    marginBottom : RFValue(20)
   },
   text: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: 'black',
     fontWeight: '300',
     textAlign: 'center',
@@ -2658,8 +2555,7 @@ const styles = StyleSheet.create({
   },
   profile: {
     marginTop: 20,
-    width: '84%',
-    marginLeft: '7%',
+    width: '85%',
     padding: 20,
     backgroundColor: '#c2c3c42e',
     borderRadius: 30,
@@ -2672,16 +2568,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flexDirection: 'row',
     justifyContent: 'center',
-    width: '80%',
-    marginLeft: '10%',
-    marginBottom: 20,
+    marginVertical: 20
   },
   profileTitle: {
     fontWeight: 'bold',
     color: 'white',
+    fontSize: RFValue(14)
   },
   name: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     marginBottom: 10,
     fontStyle: 'italic',
     color: '#22138e',
@@ -2689,7 +2584,7 @@ const styles = StyleSheet.create({
   },
   titles: {
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: RFValue(16),
     lineHeight: 30,
     width: '35%'
   },
@@ -2716,11 +2611,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   headerText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
   },
   content: {
-    fontSize: 16,
+    fontSize: RFValue(16),
     lineHeight: 30,
     width: '60%'
   },
@@ -2854,21 +2749,22 @@ const styles = StyleSheet.create({
   },
   placeholderStyle: {
     color: 'black',
-    fontSize: 16,
+    fontSize: RFValue(14),
   },
   selectedTextStyle: {
     color: 'black',
-    fontSize: 16,
+    fontSize: RFValue(14),
   },
   itemTextStyle: {
     color: 'black',
+    fontSize: RFValue(14),
   },
   iconStyle: {
     width: 20,
     height: 20,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: 'black',
     textAlign: 'left',
     paddingTop: 10,
@@ -2876,7 +2772,7 @@ const styles = StyleSheet.create({
   },
   inputSearchStyle: {
     height: 40,
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   button: {
     backgroundColor: '#A020F0',
@@ -2887,7 +2783,7 @@ const styles = StyleSheet.create({
   buttonText: {
     textAlign: 'center',
     color: 'white',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   inputs: {
     marginTop: 5,

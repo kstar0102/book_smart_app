@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, TextInput, View, Image, StyleSheet, ScrollView, StatusBar, TouchableOpacity, Alert } from 'react-native';
+import { Modal, TextInput, View, Image, StyleSheet, ScrollView, StatusBar, Dimensions, TouchableOpacity, Alert } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import StarRating, { StarRatingDisplay } from 'react-native-star-rating-widget';
 import RadioGroup from 'react-native-radio-buttons-group';
@@ -19,6 +19,9 @@ import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import RNFS from 'react-native-fs'
 import AnimatedHeader from '../AnimatedHeader';
 import Loader from '../Loader';
+import { RFValue } from 'react-native-responsive-fontsize';
+
+const { width, height } = Dimensions.get('window');
 
 export default function CompanyShift({ navigation }) {
   const [totalPages, setTotalPages] = useState(1);
@@ -669,21 +672,21 @@ export default function CompanyShift({ navigation }) {
   const [searchTerm, setSearchTem] = useState(''); // Search term
   const handleSearch = (e) => {
     setSearchTem(e);
-    const Data = []
-    if (data.length >1) {
-      Data = data.shift(data[0]);
-    } else {
-      Data = data
-    }
+    // let Data = []
+    // if (data.length >1) {
+    //   Data = data.shift(data[0]);
+    // } else {
+    //   Data = data
+    // }
     
-    const filtered = Data.filter(row => 
-      row.some(cell => 
-        cell && cell.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-    setFilteredData(filtered);
-    filtered.unshift(tableHead);
-    setTableData(tableData);
+    // const filtered = Data.filter(row => 
+    //   row.some(cell => 
+    //     cell && cell.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    //   )
+    // );
+    // setFilteredData(filtered);
+    // filtered.unshift(tableHead);
+    // setTableData(tableData);
   };
 
   //----------------------------change Current page--------------------------
@@ -724,7 +727,7 @@ export default function CompanyShift({ navigation }) {
         content = `
           <html>
           <body style="margin: 0; padding: 0;">
-              <img src="data:image/jpeg;base64,${fetchedFileInfo.content}" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"/>
+              <img src="${fetchedFileInfo.content}" style="display: block; margin-left: auto; margin-right: auto; width: 80%;"/>
           </body>
           </html>
         `;
@@ -755,7 +758,7 @@ export default function CompanyShift({ navigation }) {
 
   const itemsToShow = getItemsForPage(currentPage);
 
-  const widths = [150, 100, 80, 100, 150, 150, 150, 150, 80, 150, 150, 100, 150, 100];
+  const widths = [150, 120, 80, 150, 150, 150, 150, 150, 80, 150, 150, 100, 150, 120];
   const RenderItem = ({ item, index }) => (
     <View
       key={index}
@@ -795,7 +798,7 @@ export default function CompanyShift({ navigation }) {
           return (
             <TouchableOpacity key={idx} onPress={() => handleCellClick(item)}>
               <Text
-                style={[styles.tableItemStyle, { width }]}
+                style={[styles.tableItemStyle, { flex: 1, justifyContent: 'center', alignItems: 'center', width }]}
               >
                 {item[idx]}
               </Text>
@@ -1006,62 +1009,63 @@ export default function CompanyShift({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <StatusBar
-        translucent backgroundColor="transparent"
-      />
-      <MHeader navigation={navigation} />
+      <StatusBar translucent backgroundColor="transparent"/>
+      <MHeader navigation={navigation} back={true} />
       <SubNavbar navigation={navigation} name={"FacilityLogin"} />
-      <ScrollView style={{ width: '100%', marginTop: 157 }}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={{ width: '100%', marginTop: height * 0.25 }}>
         <View style={styles.topView}>
           <AnimatedHeader title="COMPANY JOBS / SHIFTS" />
           <View style={styles.bottomBar} />
         </View>
-        <View style={{ marginTop: 30, flexDirection: 'row', width: '90%', marginLeft: '5%', gap: 10 }}>
+        <View style={{ marginTop: RFValue(30), flexDirection: 'row', width: '90%', marginLeft: '5%', gap: 10, flexWrap: 'wrap' }}>
           <TouchableOpacity style={[styles.subBtn, {}]} onPress={() => navigation.navigate('AddJobShift')}>
-            <View style={{ backgroundColor: 'white', borderRadius: 10, width: 16, height: 16, justifyContent: 'center', alignItems: 'center', display: 'flex' }}>
-              <Text style={{ fontWeight: 'bold', color: '#194f69', textAlign: 'center', marginTop: 0, lineHeight: 16 }}>+</Text>
+            <View style={{ backgroundColor: 'white', borderRadius: RFValue(10), width: RFValue(16), height: RFValue(16), justifyContent: 'center', alignItems: 'center', display: 'flex' }}>
+              <Text style={{ fontWeight: 'bold', color: '#194f69', textAlign: 'center', marginTop: 0, lineHeight: RFValue(16) }}>+</Text>
             </View>
-            <Text style={styles.profileTitle}>Add A New Job / Shift
+            <Text style={[styles.profileTitle, { fontSize: RFValue(14) }]}>Add A New Job / Shift
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.subBtn, {}]} onPress={() => {
             navigation.navigate('FacilityProfile')
           }}>
-            <Text style={styles.profileTitle}>🏚️ Facilities Home</Text>
+            <Text style={[styles.profileTitle, { fontSize: RFValue(14) }]}>🏚️ Facilities Home</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.profile}>
-          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ backgroundColor: '#000080', color: 'white', paddingHorizontal: 5 }}>TOOL TIPS</Text>
-          </View>
-          <View style={{ flexDirection: 'row' }}>
-            <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
-            <Text style={[styles.text, { textAlign: 'left', marginTop: 10 }]}>When A New "Job / Shift" is added the status will appear as <Text style={{ backgroundColor: '#ffff99' }}>"AVAILABLE"</Text> & will appear on Caregivers Dashboard</Text>
-          </View>
-          <View style={{ flexDirection: 'row' }}>
-            <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
-            <Text style={[styles.text, { textAlign: 'left', marginTop: 10 }]}>Caregivers can "Bid" or show interest on all "Job / Shifts" - Available</Text>
-          </View>
-          <View style={{ flexDirection: 'row' }}>
-            <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
-            <Text style={[styles.text, { textAlign: 'left', marginTop: 10 }]}>Facilities can view all bids and award a shift to the nurse of choice, once awarded the Job / Shift will update to a stus of <Text style={{ backgroundColor: '#ccffff' }}>"AWARDED"</Text></Text>
-          </View>
-          <View style={{ flexDirection: 'row' }}>
-            <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
-            <Text style={[styles.text, { textAlign: 'left', marginTop: 10 }]}>Once the Caregiver has completed the "Job / Shift" and uploads there timesheet, the status will update to <Text style={{ backgroundColor: '#ccffcc' }}>"COMPLETED"</Text></Text>
+
+        <View style = {{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center'}}>
+          <View style={styles.profile}>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ backgroundColor: '#000080', color: 'white', paddingHorizontal: 5, fontSize:RFValue(14) }}>TOOL TIPS</Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
+              <Text style={[styles.text, { textAlign: 'left', marginTop: 10, fontSize:RFValue(13) }]}>When A New "Job / Shift" is added the status will appear as <Text style={{ backgroundColor: '#ffff99' }}>"AVAILABLE"</Text> & will appear on Caregivers Dashboard</Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
+              <Text style={[styles.text, { textAlign: 'left', marginTop: 10, fontSize:RFValue(13) }]}>Caregivers can "Bid" or show interest on all "Job / Shifts" - Available</Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
+              <Text style={[styles.text, { textAlign: 'left', marginTop: 10, fontSize:RFValue(13) }]}>Facilities can view all bids and award a shift to the nurse of choice, once awarded the Job / Shift will update to a stus of <Text style={{ backgroundColor: '#ccffff' }}>"AWARDED"</Text></Text>
+            </View>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ backgroundColor: 'black', width: 4, height: 4, borderRadius: 2, marginTop: 20 }} />
+              <Text style={[styles.text, { textAlign: 'left', marginTop: 10, fontSize:RFValue(13) }]}>Once the Caregiver has completed the "Job / Shift" and uploads there timesheet, the status will update to <Text style={{ backgroundColor: '#ccffcc' }}>"COMPLETED"</Text></Text>
+            </View>
           </View>
         </View>
+
+        
         <View>
           <View style={styles.body}>
             <View style={styles.bottomBar} />
             <View style={styles.modalBody}>
-              <View style={[styles.profileTitleBg, { marginLeft: 0, marginTop: 30 }]}>
+              <View style={[styles.profileTitleBg, { marginLeft: 0, marginTop: RFValue(30) }]}>
                 <Text style={styles.profileTitle}>🖥️ FACILITY / SHIFT LISTINGS</Text>
               </View>
-              <View style={[styles.searchBar, {width: '60%'}]}>
+              <View style={[styles.searchBar, {width: '70%'}]}>
                 <TextInput
                   style={[styles.searchText, {height: 30}]}
                   placeholder=""
@@ -1115,7 +1119,7 @@ export default function CompanyShift({ navigation }) {
                 </View>
               }
               <ScrollView horizontal={true} style={{marginBottom: 30, width: '95%'}}>
-                <TableComponent style={{width: '95%'}} data={itemsToShow} />
+                <TableComponent style={{width: '95%', fontSize: RFValue(14)}} data={itemsToShow} />
               </ScrollView>
             </View>
           </View>
@@ -1132,8 +1136,8 @@ export default function CompanyShift({ navigation }) {
             <View style={styles.calendarContainer}>
               <View style={styles.header}>
                 <Text style={styles.headerText}>Add / View Rating</Text>
-                <TouchableOpacity style={{width: 20, height: 20}} onPress={toggleRatingsModal}>
-                  <Image source = {images.close} style={{width: 20, height: 20}}/>
+                <TouchableOpacity style={{width: RFValue(20), height: RFValue(20)}} onPress={toggleRatingsModal}>
+                  <Image source = {images.close} style={{width: RFValue(20), height: RFValue(20)}}/>
                 </TouchableOpacity>
               </View>
               <View style={styles.body}>
@@ -1164,8 +1168,8 @@ export default function CompanyShift({ navigation }) {
             <View style={[styles.calendarContainer, { height: '80%' }]}>
               <View style={styles.header}>
                 <Text style={styles.headerText}>Facility View Job Details</Text>
-                <TouchableOpacity style={{width: 20, height: 20}} onPress={toggleJobDetailModal}>
-                  <Image source = {images.close} style={{width: 20, height: 20}}/>
+                <TouchableOpacity style={{width: RFValue(20), height: RFValue(20)}} onPress={toggleJobDetailModal}>
+                  <Image source = {images.close} style={{width: RFValue(20), height: RFValue(20)}}/>
                 </TouchableOpacity>
               </View>
               <View style={styles.body}>
@@ -1356,8 +1360,8 @@ export default function CompanyShift({ navigation }) {
             <View style={[styles.calendarContainer, { height: '80%' }]}>
               <View style={styles.header}>
                 <Text style={styles.headerText}>Verify Timesheet</Text>
-                <TouchableOpacity style={{width: 20, height: 20}} onPress={toggleJobTSVerifyModal}>
-                  <Image source = {images.close} style={{width: 20, height: 20}}/>
+                <TouchableOpacity style={{width: RFValue(20), height: RFValue(20)}} onPress={toggleJobTSVerifyModal}>
+                  <Image source = {images.close} style={{width: RFValue(20), height: RFValue(20)}}/>
                 </TouchableOpacity>
               </View>
               <View style={styles.body}>
@@ -1365,7 +1369,7 @@ export default function CompanyShift({ navigation }) {
                   <View style={[styles.modalBody, { padding: 0, paddingVertical: 10 }]}>
                     <View style={{flexDirection: 'column', width: '100%', alignItems: 'flex-start', justifyContent: 'center'}}>
                       <View>
-                        <Text style={{ fontWeight: 'bold', marginTop: 20, fontSize: 14 }}>Timesheet Verified?</Text>
+                        <Text style={{ fontWeight: 'bold', marginTop: 20, fontSize: RFValue(16) }}>Timesheet Verified?</Text>
                       </View>
                       <View style={{ color: 'black' }}>
                         <RadioGroup 
@@ -1383,17 +1387,17 @@ export default function CompanyShift({ navigation }) {
                       </View>
                     </View>
                     <View>
-                      <Text style={{ fontWeight: 'bold', marginTop: 20, fontSize: 14, marginBottom: 5 }}>Timesheet Upload</Text>
+                      <Text style={{ fontWeight: 'bold', marginTop: 20, fontSize: RFValue(16), marginBottom: 5 }}>Timesheet Upload</Text>
                     </View>
                     {selectedJob?.timeSheet?.name && 
-                      <View style={{ flexDirection: 'row' }}>
-                        <Text style={[styles.content, { lineHeight: 20, marginTop: 0, color: 'blue', width: 'auto' }]} onPress={() => { handleShowFileModal(); }}>{selectedJob?.timeSheet?.name}</Text>
+                      <View style={{ flexDirection: 'column' }}>
+                        <Text style={[styles.content, { lineHeight: RFValue(20), fontSize:RFValue(13), marginTop: 0, color: 'blue', width: 'auto' }]} onPress={() => { handleShowFileModal(); }}>{selectedJob?.timeSheet?.name}</Text>
                         <Text style={{color: 'blue'}}>&nbsp;&nbsp;remove</Text>
                       </View>
                     }
                     <View style={{flexDirection: 'row', width: '100%'}}>
                       <TouchableOpacity title="Select File" onPress={handleChooseFile} style={styles.chooseFile}>
-                        <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                        <Text style={{fontWeight: '400', padding: 0, fontSize: RFValue(12), color: 'black'}}>Choose File</Text>
                       </TouchableOpacity>
                       <TextInput
                         style={[styles.input, { width: '60%', color: 'black' }]}
@@ -1410,7 +1414,7 @@ export default function CompanyShift({ navigation }) {
                       onPress={() => handleChangeJobTSVerify()}
                       underlayColor="#0056b3"
                     >
-                      <Text style={[styles.buttonText, { fontSize: 12 }]}>Submit</Text>
+                      <Text style={[styles.buttonText, { fontSize: RFValue(14) }]}>Submit</Text>
                     </TouchableOpacity>
                   </View>
                 </ScrollView>
@@ -1440,8 +1444,9 @@ export default function CompanyShift({ navigation }) {
                   <View style={[styles.modalBody, { padding: 0, paddingVertical: 10 }]}>
                   {fileInfo.type.indexOf('pdf') >= 0 ? (
                     <Pdf
-                      source={{ uri: `data:application/pdf;base64,${fileInfo.content}` }}
+                      source={{ uri: `${fileInfo.content}` }}
                       style={styles.pdf}
+                      trustAllCerts={false}
                     />
                   ) : (
                     <WebView
@@ -1874,13 +1879,13 @@ const styles = StyleSheet.create({
   },
   titles: {
     fontWeight: 'bold',
-    fontSize: 16,
-    lineHeight: 30,
+    fontSize: RFValue(16),
+    lineHeight: RFValue(30),
     width: '35%'
   },
   content: {
-    fontSize: 16,
-    lineHeight: 30,
+    fontSize: RFValue(16),
+    lineHeight: RFValue(30),
     width: '60%'
   },
   bottomBar: {
@@ -1911,16 +1916,11 @@ const styles = StyleSheet.create({
   profile: {
     marginTop: 20,
     width: '84%',
-    marginLeft: '7%',
     padding: 20,
     backgroundColor: '#c2c3c42e',
     borderRadius: 30,
     borderWidth: 2,
     borderColor: '#b0b0b0',
-    // elevation: 1,
-    // // shadowColor: 'rgba(0, 0, 0, 0.4)',
-    // // shadowOffset: { width: 1, height: 1 },
-    // shadowRadius: 0,
   },
   profileTitleBg: {
     backgroundColor: '#BC222F',
@@ -1928,13 +1928,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flexDirection: 'row',
     justifyContent: 'center',
-    width: '80%',
-    marginLeft: '10%',
+    width: 'auto',
     marginBottom: 20
   },
   profileTitle: {
     fontWeight: 'bold',
     color: 'white',
+    fontSize: RFValue(17)
   },
   addItems: {
     flexDirection: 'row',
@@ -1973,7 +1973,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   headerText: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     fontWeight: 'bold',
   },
   closeButton: {
@@ -2018,18 +2018,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   searchText: {
-    width: '70%',
+    width: '65%',
     backgroundColor: 'white',
-    height: 30,
+    height: RFValue(30),
   },
   searchBtn: {
-    width: '30%',
+    width: '35%',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.08)',
     color: '#2a53c1',
-    height: 30
+    fontSize: RFValue(14),
+    height: RFValue(30)
   },
   filter: {
     width: '90%',
@@ -2115,7 +2116,7 @@ const styles = StyleSheet.create({
   },
   placeholderStyle: {
     color: 'black',
-    fontSize: 16,
+    fontSize: RFValue(12),
   },
   webView: {
     flex: 1,
@@ -2131,10 +2132,15 @@ const styles = StyleSheet.create({
   },
   selectedTextStyle: {
     color: 'black',
-    fontSize: 16,
+    fontSize: RFValue(12),
   },
   itemTextStyle: {
-    color: 'black'
+    color: 'black',
+    fontSize: RFValue(12),
+  },
+  inputSearchStyle: {
+    color: 'black',
+    fontSize: RFValue(12),
   },
   searchBar: {
     flexDirection: 'row',
@@ -2179,7 +2185,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: RFValue(18),
   },
   cameraContain: {
 		flex: 1,
@@ -2196,8 +2202,8 @@ const styles = StyleSheet.create({
     paddingRight: 10
   },
   btnSheet: {
-		height: 100,
-		width:100,
+    height: RFValue(80),
+    width: RFValue(80),
 		justifyContent: "center",
 		alignItems: "center",
 		borderRadius: 10,

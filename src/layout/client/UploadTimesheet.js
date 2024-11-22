@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, StatusBar, Text, Alert, TextInput, TouchableOpacity, Modal, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, StatusBar, Text, Alert, Dimensions, TextInput, TouchableOpacity, Modal, Image } from 'react-native';
 import MFooter from '../../components/Mfooter';
 import MHeader from '../../components/Mheader';
 import SubNavbar from '../../components/SubNavbar';
@@ -10,6 +10,9 @@ import RNFS from 'react-native-fs'
 import Loader from '../Loader';
 import HButton from '../../components/Hbutton';
 import { updateTimeSheet } from '../../utils/useApi';
+import { RFValue } from 'react-native-responsive-fontsize';
+
+const { width, height } = Dimensions.get('window');
 
 export default function UploadTimesheet ({ navigation, route }) {
     const { detailInfo, fileData } = route.params;
@@ -33,15 +36,47 @@ export default function UploadTimesheet ({ navigation, route }) {
         navigation.navigate("FileViewer", { jobId: jobId, fileData: '' });
     };
 
-    const handleDelete = () => {
-        setDetailedInfos(prevUploadInfo => {
-            return prevUploadInfo.map((item, index) => {
-                if (index === 2) {
-                    return { ...item, content: '' };
-                }
-                return item;
-            });
-        });
+    const handleDelete = async () => {
+        Alert.alert('Alert!', 'Are you sure you want to delete this document?', [
+            {
+                text: 'OK',
+                onPress: async () => {
+                    const data = {jobId: submitData.jobId, timeSheet: ""};
+                    const response = await updateTimeSheet(data, 'jobs');
+                    setLoading(false);
+                    if (!response?.error) {
+                        Alert.alert(
+                            'Success!',
+                            'Your timesheet has been removed.',
+                            [
+                                {
+                                text: 'OK',
+                                onPress: () => {
+                                    navigation.navigate('Shift');
+                                },
+                                }
+                            ],
+                            { cancelable: false }
+                        );
+                    } else {
+                        Alert.alert(
+                            'Failure!',
+                            'Pleae try later',
+                            [
+                                {
+                                    text: 'OK',
+                                    onPress: () => {
+                                    console.log('');
+                                    },
+                                },
+                            ],
+                            { cancelable: false }
+                        );
+                    }
+                },
+            },
+            { text: 'Cancel', style: 'cancel' },
+        ]);
     };
 
     const handleUploadSubmit = async () => {
@@ -277,33 +312,33 @@ export default function UploadTimesheet ({ navigation, route }) {
     return (
         <View style={styles.container}>
             <StatusBar translucent backgroundColor="transparent" />
-            <MHeader navigation={navigation} />
+            <MHeader navigation={navigation} back={true} />
             <SubNavbar navigation={navigation} name={'ClientSignIn'}/>
-            <ScrollView style={{width: '100%', marginTop: 157}} showsVerticalScrollIndicator={false} >
+            <ScrollView style={{width: '100%', marginTop: height * 0.25}} showsVerticalScrollIndicator={false} >
                 <View style={styles.modal}>
-                    <View style= {{width: '60%', marginLeft: '20%', marginTop: 20}}>
+                    <View style= {{width: '100%', marginTop: RFValue(20), paddingHorizontal : RFValue(50)}}>
                         <Text style={styles.headBar}>Upload TimeSheet</Text>
                     </View>
                     <View style={{ marginHorizontal: 20, marginBottom: 30 }}>
                         <View style={{flexDirection: 'column', width: '100%', gap: 10}}>
-                            <Text style={[styles.titles, {marginBottom: 5, lineHeight: 20, marginTop: 20, paddingLeft: 2}]}>{detailedInfos[0]?.title}</Text>
-                            <Text style={[styles.content, {lineHeight: 20, marginTop: 0}]}>{detailedInfos[0]?.content}</Text>
+                            <Text style={[styles.titles, {marginBottom: 5,  marginTop: 20, paddingLeft: 2, minWidth: 300}]}>{detailedInfos[0]?.title}</Text>
+                            <Text style={[styles.content, { marginTop: 0, minWidth: 300}]}>{detailedInfos[0]?.content}</Text>
                         </View>
                         <View style={{flexDirection: 'column', width: '100%', gap: 10}}>
-                            <Text style={[styles.titles, {marginBottom: 5, lineHeight: 20, marginTop: 20, paddingLeft: 2}]}>{detailedInfos[1]?.title}</Text>
-                            <Text style={[styles.content, {lineHeight: 20, marginTop: 0}]}>{detailedInfos[1]?.content}</Text>
+                            <Text style={[styles.titles, {marginBottom: 5,  marginTop: 20, paddingLeft: 2, minWidth: 300}]}>{detailedInfos[1]?.title}</Text>
+                            <Text style={[styles.content, { marginTop: 0, minWidth: 300}]}>{detailedInfos[1]?.content}</Text>
                         </View>
                         <View style={{flexDirection: 'column', width: '100%', gap: 10}}>
-                            <Text style={[styles.titles, {marginBottom: 5, lineHeight: 20, marginTop: 20, paddingLeft: 2}]}>{detailedInfos[2]?.title}</Text>
+                            <Text style={[styles.titles, {marginBottom: 5,  marginTop: 20, paddingLeft: 2, minWidth: 300}]}>{detailedInfos[2]?.title}</Text>
                             {detailedInfos[2]?.content && 
                             <View style={{ flexDirection: 'row' }}>
-                                <Text style={[styles.content, { lineHeight: 20, marginTop: 0, color: 'blue', width: 'auto' }]} onPress={() => { handleShowFile(detailedInfos); }}>{detailedInfos[2]?.content}</Text>
+                                <Text style={[styles.content, {  marginTop: 0, color: 'blue', width: '80%' }]} onPress={() => { handleShowFile(detailedInfos); }}>{detailedInfos[2]?.content}</Text>
                                 <Text style={{color: 'blue'}} onPress= {handleDelete}>&nbsp;&nbsp;remove</Text>
                             </View>}
                         </View>
                         <View style={{flexDirection: 'row', width: '100%', marginTop: 20}}>
                             <TouchableOpacity title="Select File" onPress={toggleFileTypeSelectModal} style={styles.chooseFile}>
-                                <Text style={{fontWeight: '400', padding: 0, fontSize: 14}}>Choose File</Text>
+                                <Text style={{fontWeight: '400', padding: 0, color:'black', fontSize: RFValue(12)}}>Choose File</Text>
                             </TouchableOpacity>
                             <TextInput
                                 style={[styles.input, {width: '70%', color: 'black'}]}
@@ -313,13 +348,13 @@ export default function UploadTimesheet ({ navigation, route }) {
                                 value={submitData?.timeSheet?.name || ''}
                             />
                         </View>
-                        <View style={[styles.btn, {marginTop: 20}]}>
+                        <View style={[styles.btn, {marginTop: RFValue(20)}]}>
                             <HButton style={styles.subBtn} onPress={handleUploadSubmit }>
                                 Submit
                             </HButton>
                         </View>
                         <Text
-                            style={{textDecorationLine: 'underline', color: '#2a53c1', marginTop: 20, textAlign: 'left', width: '90%'}}
+                            style={{textDecorationLine: 'underline', color: '#2a53c1', marginTop: RFValue(20), fontSize: RFValue(14), textAlign: 'left', width: '90%'}}
                             onPress={handleBack}
                         >
                             Back to My Shift
@@ -339,27 +374,27 @@ export default function UploadTimesheet ({ navigation, route }) {
                     <StatusBar translucent backgroundColor='transparent' />
                     <ScrollView style={styles.modalsContainer} showsVerticalScrollIndicator={false}>
                         <View style={[styles.viewContainer, { marginTop: '1%' }]}>
-                            <View style={[styles.header, { height: 100 }]}>
+                            <View style={[styles.header, { height: RFValue(100) }]}>
                                 <Text style={styles.headerText}>Choose File</Text>
-                                <TouchableOpacity style={{ width: 20, height: 20 }} onPress={toggleFileTypeSelectModal}>
-                                    <Image source={images.close} style={{ width: 20, height: 20 }} />
+                                <TouchableOpacity style={styles.modalClose} onPress={toggleFileTypeSelectModal}>
+                                    <Image source={images.close} style={styles.modalClose} />
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.body}>
                                 <View style={[styles.modalBody, { marginBottom: 20 }]}>
                                     <View style={styles.cameraContain}>
-                                    <TouchableOpacity activeOpacity={0.5} style={styles.btnSheet} onPress={openCamera}>
-                                        <Image source={images.camera} style={{ width: 50, height: 50 }} />
-                                        <Text style={styles.textStyle}>Camera</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity activeOpacity={0.5} style={styles.btnSheet} onPress={pickGallery}>
-                                        <Image source={images.gallery} style={{ width: 50, height: 50 }} />
-                                        <Text style={styles.textStyle}>Gallery</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity activeOpacity={0.5} style={styles.btnSheet} onPress={pickFile}>
-                                        <Image source={images.folder} style={{ width: 50, height: 50 }} />
-                                        <Text style={styles.textStyle}>Folder</Text>
-                                    </TouchableOpacity>
+                                        <TouchableOpacity activeOpacity={0.5} style={styles.btnSheet} onPress={openCamera}>
+                                            <Image source={images.camera} style={styles.modalImage} />
+                                            <Text style={styles.textStyle}>Camera</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity activeOpacity={0.5} style={styles.btnSheet} onPress={pickGallery}>
+                                            <Image source={images.gallery} style={styles.modalImage} />
+                                            <Text style={styles.textStyle}>Gallery</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity activeOpacity={0.5} style={styles.btnSheet} onPress={pickFile}>
+                                            <Image source={images.folder} style={styles.modalImage} />
+                                            <Text style={styles.textStyle}>Folder</Text>
+                                        </TouchableOpacity>
                                     </View>
                                 </View>
                             </View>
@@ -377,15 +412,15 @@ const styles = StyleSheet.create({
         height: '100%',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'flex-start',
+        justifyContent: 'center',
         position: 'relative',
         width: '100%'
     },
     modal: {
         width: '90%',
-        borderRadius: 10,
+        borderRadius: RFValue(10),
         margin: '5%',
-        marginBottom: 100,
+        marginBottom: RFValue(100),
         borderWidth: 1,
         borderColor: 'grey',
         overflow: 'hidden',
@@ -395,6 +430,20 @@ const styles = StyleSheet.create({
         shadowRadius: 3,
         elevation: 0,
         backgroundColor: "#dcd6fa",
+    },
+    modalImage : {
+        width: RFValue(50), 
+        height: RFValue(50)
+    },
+
+    modalClose : {
+        width: RFValue(20), 
+        height: RFValue(20)
+    },
+
+    textStyle : {
+        color: 'black',
+        fontSize : RFValue(14)
     },
     headBar: {
         textAlign: 'center',
@@ -407,14 +456,16 @@ const styles = StyleSheet.create({
     },
     titles: {
         fontWeight: 'bold',
-        fontSize: 16,
-        lineHeight: 30,
-        width: '35%'
+        fontSize: RFValue(15),
+        lineHeight: RFValue(20),
+        width: '40%',
+        color: "black"
     },
     content: {
-        fontSize: 16,
-        lineHeight: 30,
-        width: '60%'
+        fontSize: RFValue(15),
+        lineHeight: RFValue(20),
+        width: '60%',
+        color: "black"
     },
     input: {
         backgroundColor: 'white', 
@@ -459,7 +510,8 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
     },
     headerText: {
-        fontSize: 18,
+        fontSize: RFValue(18),
+        color: 'black',
         fontWeight: 'bold',
     },
     closeButton: {
@@ -492,24 +544,23 @@ const styles = StyleSheet.create({
         paddingRight: 10
     },
     subBtn: {
-        marginTop: 10,
-        padding: 10,
+        marginTop: RFValue(10),
+        padding: RFValue(10),
         backgroundColor: '#A020F0',
         color: 'white',
-        fontSize: 16,
+        fontSize: RFValue(16),
     },
     btnSheet: {
-        height: 100,
-        width:100,
+        height: RFValue(80),
+        width: RFValue(80),
         justifyContent: "center",
         alignItems: "center",
-        borderRadius: 10,
+        borderRadius: RFValue(10),
         shadowOpacity: 0.5,
         shadowRadius: 10,
-        margin: 5,
         shadowColor: '#000',
         shadowOffset: { width: 3, height: 3 },
-        marginVertical: 14,
+        marginVertical: RFValue(14),
         padding: 5,
     }
 });

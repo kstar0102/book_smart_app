@@ -5,8 +5,13 @@ import images from '../assets/images';
 import HButton from '../components/Hbutton'
 import MFooter from '../components/Mfooter';
 import MHeader from '../components/Mheader';
+import { RFValue } from "react-native-responsive-fontsize";
+import { Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
 
 export default function Dashboard ({ navigation }) {
+
   const handleClient = () => {
     navigation.navigate('ClientSignIn');
   };
@@ -25,6 +30,7 @@ export default function Dashboard ({ navigation }) {
       <Image
         source={images.homepage}
         style={styles.homepage}
+        resizeMode="contain"
       />
       <Text style={styles.text}>Are you looking to work or to hire?</Text>
       <View style={styles.buttonWrapper}>
@@ -53,24 +59,25 @@ const styles = StyleSheet.create({
     position: 'relative'
   },
   homepage: {
-    width: 350,
-    height: 300,
+    width: width * 0.65,
+    height: height * 0.25,
     marginTop: 30,
     resizeMode: 'cover'
   },
   text: {
-    fontSize: 20,
+    fontSize: RFValue(17),
     color: 'black',
     fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: 30,
+    marginTop: 10,
   },
   buttonWrapper: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 15,
   },
   button: {
+    fontSize: RFValue(14),
     marginHorizontal: 5, // Replace gap with marginHorizontal
   },
 });

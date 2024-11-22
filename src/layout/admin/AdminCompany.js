@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet, ScrollView, StatusBar, TouchableOpacity } from 'react-native';
+import { View, Image, StyleSheet, ScrollView, StatusBar, TouchableOpacity, Dimensions } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
 import MFooter from '../../components/Mfooter';
@@ -10,6 +10,9 @@ import { useAtom } from 'jotai';
 import { emailAtom } from '../../context/AdminAuthProvider'
 import { getAdminInfo } from '../../utils/useApi';
 import Loader from '../Loader';
+import { RFValue } from 'react-native-responsive-fontsize';
+
+const { width, height } = Dimensions.get('window');
 
 export default function AdminCompany ({ navigation }) {
   const [firstName, setFirstName] = useState('');
@@ -34,6 +37,7 @@ export default function AdminCompany ({ navigation }) {
   const getData = async () => {
     setLoading(true);
     let response = await getAdminInfo({ email: email });
+    console.log(response);
     if (response?.error) {
       setFirstName('');
       setLastName('');
@@ -63,7 +67,7 @@ export default function AdminCompany ({ navigation }) {
         />
         <AHeader navigation={navigation}  currentPage={2} />
         <SubNavbar navigation={navigation} name={"AdminLogin"}/>
-        <ScrollView style={{width: '100%', marginTop: 155}}
+        <ScrollView style={{width: '100%', marginTop: height * 0.25}}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.topView}>
@@ -75,8 +79,8 @@ export default function AdminCompany ({ navigation }) {
               <Text style={styles.profileTitle}>ADMIN / COMPANY PROFILE</Text>
             </View>
             {avatar.content && <Image
-              source={{ uri: `data:image/jpeg;base64,${avatar.content}` }}
-              resizeMode="cover"
+              source={{ uri: `${avatar.content}` }}
+              resizeMode="contain"
               style={styles.nurse}
             />}
             <Text style={styles.name}>{firstName || ""} {lastName || ""}</Text>
@@ -124,7 +128,6 @@ const styles = StyleSheet.create({
     height: 68,
   },
   topView: {
-    marginTop: 50,
     marginLeft: '10%',
     width: '80%',
     flexDirection: 'column',
@@ -146,7 +149,7 @@ const styles = StyleSheet.create({
     top: 10
   },
   title: {
-    fontSize: 18,
+    fontSize: RFValue(18),
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'left',
@@ -167,7 +170,7 @@ const styles = StyleSheet.create({
     borderColor: 'hsl(0, 0%, 86%)',
   },
   text: {
-    fontSize: 14,
+    fontSize: RFValue(14),
     color: 'black',
     fontWeight: '300',
     textAlign: 'center',
@@ -197,12 +200,12 @@ const styles = StyleSheet.create({
   },
   titles: {
     fontWeight: 'bold',
-    fontSize: 16,
-    lineHeight: 40,
+    fontSize: RFValue(16),
+    lineHeight: 30,
     width: '40%'
   },
   content: {
-    fontSize: 16,
+    fontSize: RFValue(14),
     width: '60%',
     lineHeight: 40,
   },
@@ -212,11 +215,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     flexDirection: 'row',
     justifyContent: 'center',
-    width: '80%',
-    marginLeft: '10%',
+    width: '90%',
+    marginLeft: '5%',
     marginBottom: 20
   },
   profileTitle: {
+    fontSize: RFValue(12),
     fontWeight: 'bold',
     color: 'white',
   },
@@ -225,7 +229,7 @@ const styles = StyleSheet.create({
     height: 200
   },
   name: {
-    fontSize: 20,
+    fontSize: RFValue(20),
     marginVertical: 10,
   },
   edit: {

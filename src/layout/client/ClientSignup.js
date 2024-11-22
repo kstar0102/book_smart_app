@@ -6,15 +6,18 @@ import DatePicker from 'react-native-date-picker';
 import HButton from '../../components/Hbutton';
 import MHeader from '../../components/Mheader';
 import MFooter from '../../components/Mfooter';
-import { Signup } from '../../utils/useApi';
+import { getDegreeList, Signup } from '../../utils/useApi';
 import images from '../../assets/images';
 import Loader from '../Loader';
-// Choose file
 import DocumentPicker from 'react-native-document-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-
 import RNFS from 'react-native-fs'
 import AnimatedHeader from '../AnimatedHeader';
+import { Dimensions } from 'react-native';
+import { RFValue } from "react-native-responsive-fontsize";
+import constStyles from '../../assets/styles';
+
+const { width, height } = Dimensions.get('window');
 
 export default function ClientSignUp({ navigation }) {
   const [firstName, setFirstName] = useState('');
@@ -89,6 +92,24 @@ export default function ClientSignUp({ navigation }) {
 
     Animated.loop(sequenceAnimation).start();
   }, [fadeAnim]);
+  const [degrees, setDegree] = useState([]);
+  const getDegree = async () => {
+    const response = await getDegreeList('degree');
+    if (!response?.error) {
+      let tempArr = [];
+      response.data.map(item => {
+        tempArr.push(item.degreeName);
+      });
+      tempArr.unshift('');
+      setDegree(tempArr);
+    } else {
+      setDegree([]);
+    }
+  }
+
+  useEffect(() => {
+    getDegree();
+  }, []);
 
   const handleItemPress = (text) => {
     setTitle(text);
@@ -298,17 +319,17 @@ export default function ClientSignUp({ navigation }) {
     setSignature((prev) => ({...prev, content: result.encoded}));
   };
 
-  const getSignature = () => {
-    if (signatureRef.current) {
-      signatureRef.current.saveImage();
-    }
-  };
+  // const getSignature = () => {
+  //   if (signatureRef.current) {
+  //     signatureRef.current.saveImage();
+  //   }
+  // };
 
-  const resetSignature = () => {
-    if (signatureRef.current) {
-      signatureRef.current.resetImage();
-    }
-  };
+  // const resetSignature = () => {
+  //   if (signatureRef.current) {
+  //     signatureRef.current.resetImage();
+  //   }
+  // };
   
   const formatPhoneNumber = (input) => {
     const cleaned = input.replace(/\D/g, '');
@@ -559,44 +580,43 @@ export default function ClientSignUp({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" />
-      <MHeader navigation={navigation}/>
+      <MHeader navigation={navigation} back={true} />
       <ScrollView style = {styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.modal}>
           <View style={styles.intro}>
             <AnimatedHeader title="CAREGIVERS REGISTER HERE!" />
-            <View style={{flexDirection:'row', justifyContent: 'center', marginVertical: 10}}>
-              {/* <View style={styles.marker} /> */}
-              <Text style={[styles.text, {flexDirection:'row'}]}>
-                NOTE: Your Registration will be in <Text style={[styles.text, {color:'#0000ff'}]}>"PENDING"</Text> {"\n"}
+            <View style={{flexDirection:'row', justifyContent: 'center', marginVertical: RFValue(20)}}>
+              <Text style={[constStyles.signUpText, {flexDirection:'row'}]}>
+                NOTE: Your Registration will be in <Text style={[constStyles.signUpText, {color:'#0000ff'}]}>"PENDING"</Text>
                 &nbsp;Status until your information is verified. Once
-                <Text style={[styles.text, {color:'#008000'}]}> "APPROVED" </Text>you will be notified by email.
+                <Text style={[constStyles.signUpText, {color:'#008000'}]}> "APPROVED" </Text>you will be notified by email.
               </Text>
             </View>
           </View>
           <View style={styles.authInfo}>
             <Text style={styles.subject}>CONTACT INFORMATION</Text>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Name <Text style={{color: 'red'}}>*</Text> </Text>
+            <View>
+              <Text style={constStyles.signUpSubtitle}> Name <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'row', width: '100%', gap: 5}}>
                 <TextInput
-                  style={[styles.input, {width: '50%'}]}
+                  style={[constStyles.signUpinput, {width: '50%'}]}
                   placeholder="First"
                   onChangeText={e => setFirstName(e)}
                   value={firstName || ''}
                 />
                 <TextInput
-                  style={[styles.input, {width: '50%'}]}
+                  style={[constStyles.signUpinput, {width: '50%'}]}
                   placeholder="Last"
                   onChangeText={e => setLastName(e)}
                   value={lastName || ''}
                 />
               </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Email <Text style={{color: 'red'}}>*</Text> </Text>
+            <View>
+              <Text style={constStyles.signUpSubtitle}> Email <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'row', width: '100%', gap: 5}}>
                 <TextInput
-                  style={[styles.input, {width: '100%'}]}
+                  style={[constStyles.signUpinput, {width: '100%'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
@@ -606,25 +626,25 @@ export default function ClientSignUp({ navigation }) {
                 />
               </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Phone <Text style={{color: 'red'}}>*</Text> </Text>
+            <View>
+              <Text style={constStyles.signUpSubtitle}> Phone <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'row', width: '100%', gap: 5}}>
                 <TextInput
                   placeholder="(___) ___-____"
                   value={phoneNumber}
-                  style={[styles.input, {width: '100%'}]}
+                  style={[constStyles.signUpinput, {width: '100%'}]}
                   onChangeText={(e) => handlePhoneNumberChange(e)}
                   keyboardType="phone-pad"
                 />
               </View>
             </View>
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Title <Text style={{color: 'red'}}>*</Text> </Text>
+            <View>
+              <Text style={constStyles.signUpSubtitle}> Title <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{position: 'relative', width: '100%', gap: 5}}>
                 <Pressable style= {{width: '100%', height: 50, zIndex: 10}} onPress={handleTitles}>
                 </Pressable>
                   <TextInput
-                    style={[styles.input, {width: '100%', zIndex: 0, position: 'absolute', top: 0}]}
+                    style={[constStyles.signUpinput, {width: '100%', zIndex: 0, position: 'absolute', top: 0}]}
                     placeholder=""
                     editable= {false}
                     value={title ? title : 'Select Title...' }
@@ -639,21 +659,26 @@ export default function ClientSignUp({ navigation }) {
                 >
                   <View style={styles.modalContainer}>
                     <View style={styles.calendarContainer}>
-                      <Text style={styles.subtitle} onPress={()=> handleItemPress('')}>Select Title...</Text>
-                      <Text style={styles.subtitle} onPress={()=> handleItemPress('CNA')}>CNA</Text>
-                      <Text style={styles.subtitle} onPress={()=> handleItemPress('LPN')}>LPN</Text>
-                      <Text style={styles.subtitle} onPress={()=> handleItemPress('RN')}>RN</Text>
+                    {degrees.map((value, index) => (
+                      <Text
+                        key={index}
+                        style={[constStyles.signUpSubtitle, { lineHeight: RFValue(25) }]}
+                        onPress={() => handleItemPress(value)}
+                      >
+                        {value === "" ? "Select Title ..." : value}
+                      </Text>
+                    ))}
                     </View>
                   </View>
                 </Modal>}
               </View>
             </View>
             <View style={styles.email}>
-              <Text style={styles.subtitle}> Date of Birth <Text style={{color: 'red'}}>*</Text> </Text>
+              <Text style={constStyles.signUpSubtitle}> Date of Birth <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'column', width: '100%', gap: 5, position: 'relative'}}>
                 <TouchableOpacity onPress={() => setShowCalendar(true)} style={{width: '100%', height: 40, zIndex: 1}}></TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '100%', position: 'absolute', zIndex: 0, color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '100%', position: 'absolute', zIndex: 0, color: 'black'}]}
                   placeholder=""
                   value={birthday.toDateString()}
                   editable={false}
@@ -673,10 +698,10 @@ export default function ClientSignUp({ navigation }) {
               </View>
             </View>
             <View style={styles.email}>
-              <Text style={styles.subtitle}> SS# <Text style={{color: 'red'}}>*</Text> </Text>
+              <Text style={constStyles.signUpSubtitle}> SS# <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'row', width: '100%', gap: 5}}>
                 <TextInput
-                  style={[styles.input, {width: '100%'}]}
+                  style={[constStyles.signUpinput, {width: '100%'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
@@ -687,10 +712,10 @@ export default function ClientSignUp({ navigation }) {
               </View>
             </View>
             <View style={styles.email}>
-              <Text style={styles.subtitle}> Verify SS# <Text style={{color: 'red'}}>*</Text> </Text>
+              <Text style={constStyles.signUpSubtitle}> Verify SS# <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'row', width: '100%', gap: 5}}>
                 <TextInput
-                  style={[styles.input, {width: '100%'}]}
+                  style={[constStyles.signUpinput, {width: '100%'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
@@ -701,70 +726,70 @@ export default function ClientSignUp({ navigation }) {
               </View>
             </View>
             <View style={styles.email}>
-              <Text style={styles.subtitle}> Caregiver Address <Text style={{color: 'red'}}>*</Text> </Text>
+              <Text style={constStyles.signUpSubtitle}> Caregiver Address <Text style={{color: 'red'}}>*</Text> </Text>
               <View style={{flexDirection: 'column', width: '100%', gap: 5}}>
                 <View style={{width: '100%', marginBottom: 10}}>
                   <TextInput
-                    style={[styles.input, {width: '100%', marginBottom: 0}]}
+                    style={[constStyles.signUpinput, {width: '100%', marginBottom: 0}]}
                     placeholder=""
                     autoCorrect={false}
                     autoCapitalize="none"
                     onChangeText={e => handleInputAddress('streetAddress', e)}
                     value={address.streetAddress || ''}
                   />
-                  <Text style={{ color: 'black', paddingLeft: 5 }}>Street Address<Text style={{color: 'red'}}> *</Text></Text>
+                  <Text style={constStyles.signUpsmalltitle}>Street Address<Text style={{color: 'red'}}> *</Text></Text>
                 </View>
                 <View style={{width: '100%', marginBottom: 10}}>
                   <TextInput
-                    style={[styles.input, {width: '100%', marginBottom: 0}]}
+                    style={[constStyles.signUpinput, {width: '100%', marginBottom: 0}]}
                     placeholder=""
                     autoCorrect={false}
                     autoCapitalize="none"
                     onChangeText={e => handleInputAddress('streetAddress2', e)}
                     value={address.streetAddress2 || ''}
                   />
-                  <Text style={{ color: 'black', paddingLeft: 5 }}>Street Address2</Text>
+                  <Text style={constStyles.signUpsmalltitle}>Street Address2</Text>
                 </View>
                 <View style={{flexDirection: 'row', width: '100%', gap: 5, marginBottom: 30}}>
-                  <View style={[styles.input, {width: '45%'}]}>
+                  <View style={[constStyles.signUpinput, {width: '45%'}]}>
                     <TextInput
                       placeholder=""
-                      style={[styles.input, {width: '100%', marginBottom: 0}]}
+                      style={[constStyles.signUpinput, {width: '100%', marginBottom: 0}]}
                       onChangeText={e => handleInputAddress('city', e)}
                       value={address.city || ''}
                     />
-                    <Text style={{ color: 'black', paddingLeft: 5 }}>City<Text style={{color: 'red'}}> *</Text></Text>
+                    <Text style={constStyles.signUpsmalltitle}>City<Text style={{color: 'red'}}> *</Text></Text>
                   </View>
-                  <View style={[styles.input, {width: '20%'}]}>
+                  <View style={[constStyles.signUpinput, {width: '20%'}]}>
                     <TextInput
                       placeholder=""
-                      style={[styles.input, {width: '100%', marginBottom: 0, paddingLeft: 1}]}
+                      style={[constStyles.signUpinput, {width: '100%', marginBottom: 0, paddingLeft: 1}]}
                       onChangeText={e => handleInputAddress('state', e)}
                       value={address.state || ''}
                     />
-                    <Text style={{ color: 'black', paddingLeft: 5 }}>State<Text style={{color: 'red'}}> *</Text></Text>
+                    <Text style={constStyles.signUpsmalltitle}>State<Text style={{color: 'red'}}> *</Text></Text>
                   </View>
-                  <View style={[styles.input, {width: '30%'}]}>
+                  <View style={[constStyles.signUpinput, {width: '30%'}]}>
                     <TextInput
                       placeholder=""
-                      style={[styles.input, {width: '100%', marginBottom: 0}]}
+                      style={[constStyles.signUpinput, {width: '100%', marginBottom: 0}]}
                       onChangeText={e => handleInputAddress('zip', e)}
                       value={address.zip || ''}
                     />
-                    <Text style={{ color: 'black', paddingLeft: 5 }}>Zip<Text style={{color: 'red'}}> *</Text></Text>
+                    <Text style={constStyles.signUpsmalltitle}>Zip<Text style={{color: 'red'}}> *</Text></Text>
                   </View>
                 </View>
               </View>
             </View>
             
-            <View style={styles.email}>
-              <Text style={styles.subtitle}> Upload Pic. (Optional)</Text>
+            <View>
+              <Text style={constStyles.signUpSubtitle}> Upload Pic. (Optional)</Text>
               <View style={{flexDirection: 'row', width: '100%'}}>
                 <TouchableOpacity title="Select File" onPress={toggleFileTypeSelectModal} style={styles.chooseFile}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Choose File</Text>
+                  <Text style={{fontWeight: '400', padding: 0, fontSize: RFValue(12), color: 'black'}}>Choose File</Text>
                 </TouchableOpacity>
                 <TextInput
-                  style={[styles.input, {width: '70%', color: 'black'}]}
+                  style={[constStyles.signUpinput, {width: '70%', color: 'black'}]}
                   placeholder=""
                   autoCorrect={false}
                   autoCapitalize="none"
@@ -777,8 +802,8 @@ export default function ClientSignUp({ navigation }) {
               <View style={{flexDirection: 'row'}}>
                 <Text style={{
                   backgroundColor: 'yellow', 
-                  marginBottom: 10, 
-                  fontSize: 16, 
+                  marginBottom: RFValue(10), 
+                  fontSize: RFValue(15), 
                   fontWeight: 'bold', 
                   color: 'black'}}> 
                   Create Password 
@@ -789,7 +814,7 @@ export default function ClientSignUp({ navigation }) {
                 autoCorrect={false}
                 autoCapitalize="none"
                 secureTextEntry={true}
-                style={[styles.input, {width: '100%'}]}
+                style={[constStyles.signUpinput, {width: '100%'}]}
                 placeholder=""
                 onChangeText={e => setPassword(e)}
                 value={password || ''}
@@ -798,17 +823,16 @@ export default function ClientSignUp({ navigation }) {
                 autoCorrect={false}
                 autoCapitalize="none"
                 secureTextEntry={true}
-                style={[styles.input, {width: '100%'}]}
+                style={[constStyles.signUpinput, {width: '100%'}]}
                 placeholder=""
                 onChangeText={e => setConfirmPassword(e)}
                 value={confirmPassword || ''}
               />
-              <Text style={[styles.subtitle, { fontStyle:'italic', fontSize: 14, color: 'red' }]}> Create your password to access the platform </Text>
+              <Text style={[constStyles.signUpSubtitle, { fontStyle:'italic', fontSize: RFValue(14), color: 'red' }]}>Create your password to access the platform </Text>
             </View>
             
             <View style={styles.password}>
-              <Text style={styles.subtitle}>Signature<Text style={{color: 'red'}}>*</Text> </Text>  
-              
+              <Text style={constStyles.signUpSubtitle}>Signature<Text style={{color: 'red'}}>*</Text> </Text>  
               <SignatureCapture
                 style={styles.signature}
                 ref={signatureRef}
@@ -816,37 +840,23 @@ export default function ClientSignUp({ navigation }) {
                 saveImageFileInExtStorage={false}
                 showNativeButtons={true}
               />
-
-              {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <SignatureCapture
-                  style={styles.signature}
-                  ref={signatureRef}
-                  onSaveEvent={onSaveEvent}
-                  saveImageFileInExtStorage={false}
-                  showNativeButtons={false}
-                />
-                <TouchableOpacity onPress={resetSignature} style={{ backgroundColor: '#ccc', padding: 5, width: 'auto', height: 'auto', marginLeft: 5 }}>
-                  <Text style={{fontWeight: '400', padding: 0, fontSize: 14, color: 'black'}}>Reset</Text>
-                </TouchableOpacity>
-              </View> */}
-
             </View>
             
-            <View style={[styles.email, {marginTop: 20}]}>
-              <Text style={{fontWeight: '400', color: 'black'}}>
+            <View style = {{marginTop: RFValue(20)}}>
+              <Text style={{fontWeight: '400', color: 'black', fontSize: RFValue(12)}}>
                 As a web marketplace dedicated to booking shifts for independent contractors and customers like you, we require your signature on this disclosure statement to ensure clarity and transparency in our working relationship. By signing, you acknowledge your understanding of our role as a web-based intermediary between independent contractors and customers needing shifts booked. We are committed to upholding ethical standards, ensuring compliance with industry regulations, and prioritizing your best interests throughout the placement process. Your signature signifies mutual agreement and cooperation as we work together to match skills with open shifts. Thank you for trusting BookSmart™ for your next gig!
               </Text>
 
             </View>
 
-            <View style={[styles.btn, {marginTop: 20}]}>
+            <View style={[styles.btn, {marginTop: RFValue(20)}]}>
               <HButton style={styles.subBtn} 
                 onPress={ handlePreSubmit }>
                 Submit
               </HButton>
             </View>
 
-            <Text style={{textDecorationLine: 'underline', color: '#2a53c1', marginBottom: 100}}
+            <Text style={{textDecorationLine: 'underline', color: '#2a53c1', fontSize: RFValue(14), marginBottom: 20}}
               onPress={handleBack}
             >
               Back to 🏚️ Caregiver Home
@@ -866,7 +876,7 @@ export default function ClientSignUp({ navigation }) {
             <ScrollView style={styles.modalsContainer} showsVerticalScrollIndicator={false}>
               <View style={[styles.viewContainer, { marginTop: '50%' }]}>
                 <View style={[styles.header, { height: 100 }]}>
-                  <Text style={styles.headerText}>Choose File</Text>
+                  <Text style={constStyles.signUpheaderText}>Choose File</Text>
                   <TouchableOpacity style={{ width: 20, height: 20 }} onPress={toggleFileTypeSelectModal}>
                     <Image source={images.close} style={{ width: 20, height: 20 }} />
                   </TouchableOpacity>
@@ -874,15 +884,15 @@ export default function ClientSignUp({ navigation }) {
                 <View style={styles.body}>
                   <View style={[styles.modalBody, { marginBottom: 20 }]}>
                     <View style={styles.cameraContain}>
-                      <TouchableOpacity activeOpacity={0.5} style={styles.btnSheet} onPress={openCamera}>
+                      <TouchableOpacity activeOpacity={0.5} style={constStyles.signUpbtnSheet} onPress={openCamera}>
                         <Image source={images.camera} style={{ width: 50, height: 50 }} />
                         <Text style={styles.textStyle}>Camera</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity activeOpacity={0.5} style={styles.btnSheet} onPress={pickGallery}>
+                      <TouchableOpacity activeOpacity={0.5} style={constStyles.signUpbtnSheet} onPress={pickGallery}>
                         <Image source={images.gallery} style={{ width: 50, height: 50 }} />
                         <Text style={styles.textStyle}>Gallery</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity activeOpacity={0.5} style={styles.btnSheet} onPress={pickFile}>
+                      <TouchableOpacity activeOpacity={0.5} style={constStyles.signUpbtnSheet} onPress={pickFile}>
                         <Image source={images.folder} style={{ width: 50, height: 50 }} />
                         <Text style={styles.textStyle}>Folder</Text>
                       </TouchableOpacity>
@@ -911,7 +921,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(155, 155, 155, 0.61)'
   },
   scroll: {
-    marginTop: 97,
+    marginTop: height * 0.15,
   },
   backTitle: {
     backgroundColor: 'black',
@@ -933,6 +943,11 @@ const styles = StyleSheet.create({
     width: '90%',
     backgroundColor: 'transparent'
   },
+  smalltitle:{
+    color: 'black', 
+    paddingLeft: 5, 
+    fontSize: RFValue(13)
+  },
   textStyle: {
     color: 'black'
   },
@@ -946,17 +961,11 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginTop: 17
   },
-  text: {
-    fontSize: 14,
-    color: 'hsl(0, 0%, 29%)',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 10,
-    lineHeight: 24
-  },
+  
   modal: {
     width: '90%',
     borderRadius: 10,
+    marginBottom: 100,
     margin: '5%',
     borderWidth: 1,
     borderColor: 'grey',
@@ -1012,25 +1021,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     padding: 20
   },
-  input: {
-    backgroundColor: 'white', 
-    height: 30, 
-    marginBottom: 10, 
-    borderWidth: 1, 
-    borderColor: 'hsl(0, 0%, 86%)',
-  },
+  
   subject: {
-    padding: 5,
+    padding: RFValue(5),
     backgroundColor: '#77f9ff9c',
     borderRadius: 2,
     borderColor: 'black',
-    width: '80%',
+    width: width * 0.65,
     color: 'black',
     fontWeight: 'bold',
-    marginTop: 30,
-    marginLeft: '10%',
-    fontSize: 18,
-    borderRadius: 5,
+    marginTop: RFValue(20),
+    fontSize: RFValue(14),
+    borderRadius: RFValue(5),
     textAlign: 'center'
   },
   mark: {
@@ -1044,14 +1046,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginLeft: '25%',
   },
-  subtitle: {
-    fontSize: 16,
-    color: 'black',
-    textAlign: 'left',
-    paddingTop: 10,
-    paddingBottom: 10,
-    fontWeight: 'bold'
-  },
+  
   middleText: {
     fontSize: 16,
     margin: 0,
@@ -1074,11 +1069,10 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   subBtn: {
-    marginTop: 0,
-    padding: 10,
+    padding: RFValue(10),
     backgroundColor: '#A020F0',
     color: 'white',
-    fontSize: 16,
+    fontSize: RFValue(16),
   },
   drinksButton: {
     fontSize: 18,
@@ -1105,7 +1099,7 @@ const styles = StyleSheet.create({
     height: 150,
   },
   chooseFile: {
-    width: '30%', 
+    width: '40%', 
     height: 30, 
     flexDirection: 'row', 
     alignItems: 'center',
@@ -1167,8 +1161,8 @@ const styles = StyleSheet.create({
     paddingRight: 10
   },
   btnSheet: {
-		height: 100,
-		width:100,
+    height: RFValue(80),
+    width: RFValue(80),
 		justifyContent: "center",
 		alignItems: "center",
 		borderRadius: 10,
